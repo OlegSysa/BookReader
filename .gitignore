@@ -56,3 +56,19 @@ CodeCoverage/
 TestResult.xml
 nunit-*.xml
 /Backend/BookReader/.vs/BookReader.slnx
+
+*.v10.bin
+*.metadata.v10.bin
+*.projects.v10.bin
+*.strings.v10.bin
+
+# Visual Studio Code
+.vscode/
+
+# Visual Studio
+.vs/
+
+# OS
+Thumbs.db
+.DS_Store
+
