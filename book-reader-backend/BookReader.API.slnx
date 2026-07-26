@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="BookReader.API/BookReader.API.csproj" />
+  <Project Path="BookReader.Core/BookReader.Core.csproj" Id="f513de0e-4677-4a1a-bfef-f79cb46036de" />
+  <Project Path="BookReader.Infrastructure/BookReader.Infrastructure.csproj" Id="86f80f02-9ce4-42b1-b43d-26e301d85233" />
+  <Project Path="BookReader.Tests/BookReader.Tests.csproj" Id="4462945c-844f-4187-9672-f5210fdcd0f2" />
+</Solution>
