@@ -61,6 +61,8 @@ nunit-*.xml
 *.metadata.v10.bin
 *.projects.v10.bin
 *.strings.v10.bin
+*.slnLaunch.user
+*.csproj.user
 
 # Visual Studio Code
 .vscode/

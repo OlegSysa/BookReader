@@ -7,14 +7,24 @@ namespace BookReader.API
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
-
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("front", policy =>
+                {
+                    policy
+                        .WithOrigins("http://localhost:5173")
+                        .AllowAnyHeader()
+                        .AllowAnyMethod();
+                });
+            });
             builder.Services.AddControllers();
 
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
 
-            //app.UseHttpsRedirection();
+            app.UseHttpsRedirection();
+            app.UseCors("front");
 
             app.MapControllers();
 
