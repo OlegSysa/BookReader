@@ -69,6 +69,8 @@ nunit-*.xml
 
 # Visual Studio
 .vs/
+**/serviceDependencies.local.json
+**/serviceDependencies.local.json.user
 
 # OS
 Thumbs.db

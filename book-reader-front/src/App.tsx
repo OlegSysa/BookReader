@@ -4,7 +4,7 @@ function App() {
   const [status, setStatus] = useState("Loading...");
 
   useEffect(() => {
-    fetch("https://localhost:7266/api/health") // замени на свой порт
+    fetch("https://localhost:7266/api/health")
       .then((response) => response.json())
       .then((data) => setStatus(data.status))
       .catch((error) => {
