@@ -7,15 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Abstract\Repositories\" />
-    <Folder Include="Abstract\Services\" />
     <Folder Include="Constants\" />
-    <Folder Include="DTOs\Requests\" />
-    <Folder Include="DTOs\Responses\" />
-    <Folder Include="Services\" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="5.0.17" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.4" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.4" />
   </ItemGroup>

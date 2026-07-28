@@ -16,7 +16,7 @@ namespace BookReader.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<int>(type: "integer", nullable: false),
                     OriginalFileName = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     StoragePath = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
                     FileSize = table.Column<long>(type: "bigint", nullable: false),
