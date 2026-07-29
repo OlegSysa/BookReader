@@ -11,39 +11,52 @@ namespace BookReader.Core.Services
 {
     public class BookService : BaseService<BookService>, IBookService
     {
-        private readonly IBookRepository bookRepository;
-        private readonly IStorageService storageService;
-        public BookService(IBookRepository _bookRepository,
-            IStorageService _storageService,
+        private readonly IBookRepository _bookRepository;
+        private readonly IStorageService _storageService;
+        public BookService(IBookRepository bookRepository,
+            IStorageService storageService,
             IConfiguration config,
             ILogger<BookService> logger) : base(config, logger)
         {
-            bookRepository = _bookRepository;
-            storageService = _storageService;
+            _bookRepository = bookRepository;
+            _storageService = storageService;
         }
         public async Task<UploadBookResult> UploadAsync(Stream stream,
-            string fileName,
-            long fileSize,
-            int userId,
+            UploadBookDetails details,
             CancellationToken token) 
         {
             try
             {
-                _logger.LogInformation("Started uploading book file");
-                var savingResult = await storageService.SaveBookToStorageAsync(stream, fileName, token);
+                var isValidFile = await ValidateUploadBookModel(details, token);
+                if (!isValidFile)
+                {
+                    _logger.LogInformation($"Can not upload file. Invalid file details {details.FileName}");
+                    return new UploadBookResult(null, BookStatus.Failed);
+                }
+                
+                var savingResult = await _storageService.SaveBookToStorageAsync(stream, details.FileName, details.UserId, token);
                 if (savingResult.Status == BookStatus.Failed)
+                {
+                    _logger.LogError($"Can not upload file {details.FileName}. Issue with file storage");
                     return new UploadBookResult(null, savingResult.Status);
-
+                }
+                    
                 var newBook = new Book() {
-                    OriginalFileName = fileName,
+                    OriginalFileName = details.FileName,
                     CreatedAtUtc = DateTime.UtcNow,
-                    FileSize = fileSize,
+                    FileSize = details.FileSize,
                     Status = BookStatus.SavedToStorage,
-                    UserId = userId,
+                    UserId = details.UserId,
                     StoragePath = savingResult.Path
                 };
 
-                var metadataResult = await bookRepository.AddNewBook(newBook);
+                var metadataSavingResult = await _bookRepository.AddNewBook(newBook);
+                if (!metadataSavingResult)
+                {
+                    _logger.LogError($"File was uploaded, but metadata wasn't saved to db. Filename: {details.FileName}");
+                    await _storageService.DeleteBookFromStorage(details.UserId, details.FileName);
+                    return new UploadBookResult(null, BookStatus.Failed);
+                }
                 return new UploadBookResult(newBook, newBook.Status);
             }
             catch (Exception e)
@@ -54,7 +67,27 @@ namespace BookReader.Core.Services
         } 
 
         public async Task<IReadOnlyCollection<Book>> GetByUserIdAsync(int userId, CancellationToken token) =>
-             await bookRepository.GetByUserIdAsync(userId, token);
+             await _bookRepository.GetByUserIdAsync(userId, token);
+        public async Task<IReadOnlyCollection<Book>> GetBookByUserAndFileNameAsync(int userId, string fileName, CancellationToken token) =>
+             await _bookRepository.GetByUserAndFileNameAsync(userId, fileName, token);
 
+        private async Task<bool> ValidateUploadBookModel(UploadBookDetails details, CancellationToken token)
+        {
+            if (details.UserId == 0)
+                return false;
+
+            var existingBook = await GetBookByUserAndFileNameAsync(details.UserId, details.FileName, token);
+            if (existingBook is not null)
+                return false;
+            var availableExtensions = _config.GetSection("BookExtensions").Get<List<string>>() ?? new List<string>();
+            var fileExtension = Path.GetExtension(details.FileName);
+            if (!availableExtensions.Contains(fileExtension))
+                return false;
+            var maxFileSize = _config.GetValue<long>("BookSettings:MaxFileSize");
+            if (details.FileSize > maxFileSize)
+                return false;
+
+            return true;
+        }
     }
 }

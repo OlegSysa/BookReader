@@ -6,10 +6,9 @@ namespace BookReader.Core.Abstract.Services
     public interface IBookService
     {
         Task<IReadOnlyCollection<Book>> GetByUserIdAsync(int userId, CancellationToken token);
+        Task<IReadOnlyCollection<Book>> GetBookByUserAndFileNameAsync(int userId, string fileName, CancellationToken token);
         Task<UploadBookResult> UploadAsync(Stream stream,
-            string fileName,
-            long fileSize,
-            int userId,
+            UploadBookDetails details,
             CancellationToken token);
     }
 }

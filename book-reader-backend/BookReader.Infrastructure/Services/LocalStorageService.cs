@@ -14,16 +14,36 @@ namespace BookReader.Infrastructure.Services
         {
         }
         public async Task<UploadFileRawResult> SaveBookToStorageAsync(Stream stream, 
-            string fileName, CancellationToken token)
+            string fileName,int userId,CancellationToken token)
         {
-            var storagePath = _config["Storage:BooksPath"] ?? string.Empty;
-            if (string.IsNullOrEmpty(storagePath))
-                return new UploadFileRawResult(BookStatus.Failed, storagePath);
-            Directory.CreateDirectory(storagePath);
-            var filePath = Path.Combine(storagePath, fileName);
+            var storageRootPath = _config["Storage:BooksPath"] ?? string.Empty;
+            var storageUserPath = Path.Combine(storageRootPath, userId.ToString());
+            if (string.IsNullOrEmpty(storageUserPath))
+                return new UploadFileRawResult(BookStatus.Failed, storageUserPath);
+            if (!Directory.Exists(storageUserPath))
+            {
+                Directory.CreateDirectory(storageUserPath);
+            }
+            var filePath = Path.Combine(storageUserPath, fileName);
             await using var fileStream = File.Create(filePath);
             await stream.CopyToAsync(fileStream, token);
             return new UploadFileRawResult(BookStatus.SavedToStorage, filePath);
+        }
+
+        public async Task<bool> DeleteBookFromStorage(int userId, string fileName)
+        {
+            var storagePath = _config["Storage:BooksPath"] ?? string.Empty;
+            if (string.IsNullOrEmpty(storagePath) || !Directory.Exists(storagePath))
+            {
+                _logger.LogError($"Failed to delete book file. Can not find storage path.");
+                return false;
+            }
+            var filePath = Path.Combine(storagePath, userId.ToString(), fileName);
+            if (File.Exists(filePath))
+            {
+                File.Delete(filePath);
+            }
+            return true;
         }
     }
 }

@@ -6,6 +6,8 @@ namespace BookReader.Core.Abstract.Services
     public interface IStorageService
     {
         Task<UploadFileRawResult> SaveBookToStorageAsync(Stream stream,
-            string fileName, CancellationToken token);
+            string fileName, int userId, CancellationToken token);
+
+        Task<bool> DeleteBookFromStorage(int userId, string fileName);
     }
 }

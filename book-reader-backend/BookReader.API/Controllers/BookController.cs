@@ -1,5 +1,6 @@
 ﻿using BookReader.API.Models.Requests;
 using BookReader.Core.Abstract.Services;
+using BookReader.Core.DTOs.Models;
 using BookReader.Core.Entities;
 using BookReader.Core.Enums;
 using Microsoft.AspNetCore.Mvc;
@@ -27,9 +28,11 @@ namespace BookReader.API.Controllers
         public async Task<UploadBookResponse> Add([FromForm] UploadBookRequest request, CancellationToken token)
         {
             var userId = 0;//ToDo
-            //ToDo Add validation file format etc
+            
             await using var stream = request.File.OpenReadStream();
-            var res = await _bookService.UploadAsync(stream, request.File.FileName,request.File.Length, userId, token);
+
+            var fileDetails = new UploadBookDetails(request.File.FileName, request.File.Length, userId);
+            var res = await _bookService.UploadAsync(stream, fileDetails, token);
             var response = new UploadBookResponse()
             {
                 Code = res.Status != BookStatus.Failed ? 200 : 500,

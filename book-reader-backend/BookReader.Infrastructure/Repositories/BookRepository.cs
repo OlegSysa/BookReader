@@ -20,8 +20,12 @@ namespace BookReader.Infrastructure.Repositories
             return res > 0;
         }
 
-        public async Task<IReadOnlyCollection<Book>> GetByUserIdAsync(int userId, CancellationToken token) {
-            return await context.Books.Where(b => b.UserId == userId).ToListAsync(token);
-        } 
+        public async Task<IReadOnlyCollection<Book>> GetByUserIdAsync(int userId, CancellationToken token) => 
+            await context.Books.Where(b => b.UserId == userId).ToListAsync(token);
+
+        public async Task<IReadOnlyCollection<Book>> GetByUserAndFileNameAsync(int userId, string fileName, CancellationToken token) =>
+            await context.Books.Where(b => b.UserId == userId && b.OriginalFileName == fileName).ToListAsync(token);
+
+
     }
 }

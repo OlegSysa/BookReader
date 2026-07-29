@@ -1,5 +1,6 @@
 ﻿using BookReader.Core.Abstract.Repositories;
 using BookReader.Core.Abstract.Services;
+using BookReader.Core.DTOs.Models;
 using BookReader.Core.Enums;
 using BookReader.Core.Services;
 using Microsoft.Extensions.Configuration;
@@ -35,13 +36,11 @@ public class BookServiceTests
     {
         // Arrange
         using var stream = new MemoryStream();
-
+        var details = new UploadBookDetails("book.pdf", 0, 0);
         // Act
         var result = await _service.UploadAsync(
             stream,
-            "book.pdf",
-            0,
-            1,
+            details,
             CancellationToken.None);
 
         // Assert
