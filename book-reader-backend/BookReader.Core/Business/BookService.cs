@@ -1,46 +1,55 @@
 ﻿using BookReader.Core.Abstract.Repositories;
 using BookReader.Core.Abstract.Services;
+using BookReader.Core.Business;
+using BookReader.Core.DTOs.Models;
 using BookReader.Core.Entities;
 using BookReader.Core.Enums;
-using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace BookReader.Core.Services
 {
-    public class BookService : IBookService
+    public class BookService : BaseService<BookService>, IBookService
     {
         private readonly IBookRepository bookRepository;
         private readonly IStorageService storageService;
         public BookService(IBookRepository _bookRepository,
-            IStorageService _storageService)
+            IStorageService _storageService,
+            IConfiguration config,
+            ILogger<BookService> logger) : base(config, logger)
         {
             bookRepository = _bookRepository;
             storageService = _storageService;
         }
-        public async Task<(bool, BookStatus)> UploadAsync(IFormFile file, int userId, CancellationToken token) 
+        public async Task<UploadBookResult> UploadAsync(Stream stream,
+            string fileName,
+            long fileSize,
+            int userId,
+            CancellationToken token) 
         {
             try
             {
-                var saveToStorageStatus = await storageService.SaveBookToStorageAsync(file, token);
-                if (saveToStorageStatus == BookStatus.Failed)
-                    return (false, saveToStorageStatus);
+                _logger.LogInformation("Started uploading book file");
+                var savingResult = await storageService.SaveBookToStorageAsync(stream, fileName, token);
+                if (savingResult.Status == BookStatus.Failed)
+                    return new UploadBookResult(null, savingResult.Status);
 
-                var storagePath = string.Empty;
                 var newBook = new Book() {
-                    OriginalFileName = file.FileName,
+                    OriginalFileName = fileName,
                     CreatedAtUtc = DateTime.UtcNow,
-                    FileSize = file.Length,
-                    Status = BookStatus.Processing,
+                    FileSize = fileSize,
+                    Status = BookStatus.SavedToStorage,
                     UserId = userId,
-                    StoragePath = storagePath
+                    StoragePath = savingResult.Path
                 };
 
                 var metadataResult = await bookRepository.AddNewBook(newBook);
-                return (metadataResult, newBook.Status);
+                return new UploadBookResult(newBook, newBook.Status);
             }
             catch (Exception e)
             {
-                //Add logs!!!
-                return (false, BookStatus.Failed);
+                _logger.LogError($"Failed to upload book file. Exception: {e.Message}");
+                return new UploadBookResult(null, BookStatus.Failed);
             }
         } 
 

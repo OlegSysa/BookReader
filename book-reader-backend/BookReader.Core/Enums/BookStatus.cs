@@ -6,9 +6,10 @@ namespace BookReader.Core.Enums
 {
     public enum BookStatus
     {
-        Uploaded = 0,
-        Processing = 1,
-        Ready = 2,
-        Failed = 3
+        Uploading = 0,
+        SavedToStorage = 1,
+        ParseProcessing = 2,
+        Ready = 3,
+        Failed = 4
     }
 }

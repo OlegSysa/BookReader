@@ -1,4 +1,5 @@
 using BookReader.Infrastructure.DependencyInjection;
+using Serilog;
 namespace BookReader.API
 {
     public class Program
@@ -6,6 +7,9 @@ namespace BookReader.API
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(builder.Configuration).CreateLogger();
+
+            builder.Host.UseSerilog();
             builder.Services.AddInfrastructure(builder.Configuration);
             builder.Services.AddCors(options =>
             {
@@ -20,20 +24,30 @@ namespace BookReader.API
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
-            var app = builder.Build();
-            if (app.Environment.IsDevelopment())
+            try
             {
-                app.UseSwagger();
-                app.UseSwaggerUI();
+                var app = builder.Build();
+                if (app.Environment.IsDevelopment())
+                {
+                    app.UseSwagger();
+                    app.UseSwaggerUI();
+                }
+
+                app.UseHttpsRedirection();
+                app.UseCors("front");
+
+                app.MapControllers();
+
+                app.Run();
             }
-            // Configure the HTTP request pipeline.
-
-            app.UseHttpsRedirection();
-            app.UseCors("front");
-
-            app.MapControllers();
-
-            app.Run();
+            catch (Exception e)
+            {
+                Log.Fatal(e, "Application terminated unexpectedly");
+            }
+            finally
+            {
+                Log.CloseAndFlush();
+            }
         }
     }
 }

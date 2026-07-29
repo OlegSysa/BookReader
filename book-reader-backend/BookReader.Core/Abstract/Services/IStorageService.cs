@@ -1,13 +1,11 @@
-﻿using BookReader.Core.Enums;
-using Microsoft.AspNetCore.Http;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using BookReader.Core.DTOs.Models;
+using BookReader.Core.Enums;
 
 namespace BookReader.Core.Abstract.Services
 {
     public interface IStorageService
     {
-        Task<BookStatus> SaveBookToStorageAsync(IFormFile file, CancellationToken token);
+        Task<UploadFileRawResult> SaveBookToStorageAsync(Stream stream,
+            string fileName, CancellationToken token);
     }
 }

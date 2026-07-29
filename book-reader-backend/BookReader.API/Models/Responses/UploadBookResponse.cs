@@ -1,9 +1,6 @@
 ﻿using BookReader.Core.Enums;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace BookReader.Core.DTOs.Responses
+namespace BookReader.API.Models.Requests
 {
     public class UploadBookResponse
     {
