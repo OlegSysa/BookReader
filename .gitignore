@@ -76,3 +76,6 @@ nunit-*.xml
 Thumbs.db
 .DS_Store
 
+#LocalFiles
+**/Storage
+

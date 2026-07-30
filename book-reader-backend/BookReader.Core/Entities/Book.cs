@@ -7,7 +7,7 @@ namespace BookReader.Core.Entities
 {
     public class Book
     {
-        public Guid Id { get; set; }
+        public int Id { get; set; }
 
         public required int UserId { get; set; }
 

@@ -10,7 +10,7 @@ namespace BookReader.API
             Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(builder.Configuration).CreateLogger();
 
             builder.Host.UseSerilog();
-            builder.Services.AddInfrastructure(builder.Configuration);
+            builder.Services.Resolve(builder.Configuration);
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("front", policy =>

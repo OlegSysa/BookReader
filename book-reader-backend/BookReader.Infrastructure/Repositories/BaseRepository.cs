@@ -7,10 +7,10 @@ namespace BookReader.Infrastructure.Repositories
 {
     public abstract class BaseRepository
     {
-        protected readonly AppDbContext context;
-        public BaseRepository(AppDbContext _context)
+        protected readonly AppDbContext _context;
+        public BaseRepository(AppDbContext context)
         {
-            context = _context;
+            _context = context;
         }
     }
 }

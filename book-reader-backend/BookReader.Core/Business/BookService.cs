@@ -1,9 +1,11 @@
-﻿using BookReader.Core.Abstract.Repositories;
+﻿using BookReader.Core.Abstract.Events;
+using BookReader.Core.Abstract.Repositories;
 using BookReader.Core.Abstract.Services;
 using BookReader.Core.Business;
 using BookReader.Core.DTOs.Models;
 using BookReader.Core.Entities;
 using BookReader.Core.Enums;
+using BookReader.Core.Events;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -13,13 +15,16 @@ namespace BookReader.Core.Services
     {
         private readonly IBookRepository _bookRepository;
         private readonly IStorageService _storageService;
+        private readonly IEventPublisher _eventPublisher;
         public BookService(IBookRepository bookRepository,
             IStorageService storageService,
+            IEventPublisher eventPublisher,
             IConfiguration config,
             ILogger<BookService> logger) : base(config, logger)
         {
             _bookRepository = bookRepository;
             _storageService = storageService;
+            _eventPublisher = eventPublisher;
         }
         public async Task<UploadBookResult> UploadAsync(Stream stream,
             UploadBookDetails details,
@@ -57,6 +62,8 @@ namespace BookReader.Core.Services
                     await _storageService.DeleteBookFromStorage(details.UserId, details.FileName);
                     return new UploadBookResult(null, BookStatus.Failed);
                 }
+                await _eventPublisher.PublishAsync(new BookUploadedEvent(newBook.Id), token);
+
                 return new UploadBookResult(newBook, newBook.Status);
             }
             catch (Exception e)
@@ -68,7 +75,7 @@ namespace BookReader.Core.Services
 
         public async Task<IReadOnlyCollection<Book>> GetByUserIdAsync(int userId, CancellationToken token) =>
              await _bookRepository.GetByUserIdAsync(userId, token);
-        public async Task<IReadOnlyCollection<Book>> GetBookByUserAndFileNameAsync(int userId, string fileName, CancellationToken token) =>
+        public async Task<Book?> GetBookByUserAndFileNameAsync(int userId, string fileName, CancellationToken token) =>
              await _bookRepository.GetByUserAndFileNameAsync(userId, fileName, token);
 
         private async Task<bool> ValidateUploadBookModel(UploadBookDetails details, CancellationToken token)
@@ -83,7 +90,7 @@ namespace BookReader.Core.Services
             var fileExtension = Path.GetExtension(details.FileName);
             if (!availableExtensions.Contains(fileExtension))
                 return false;
-            var maxFileSize = _config.GetValue<long>("BookSettings:MaxFileSize");
+            var maxFileSize = _config.GetValue<long>("MaxFileSize");
             if (details.FileSize > maxFileSize)
                 return false;
 

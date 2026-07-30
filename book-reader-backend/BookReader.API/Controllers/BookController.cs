@@ -27,7 +27,7 @@ namespace BookReader.API.Controllers
         [HttpPost]
         public async Task<UploadBookResponse> Add([FromForm] UploadBookRequest request, CancellationToken token)
         {
-            var userId = 0;//ToDo
+            var userId = 1;//ToDo
             
             await using var stream = request.File.OpenReadStream();
 
