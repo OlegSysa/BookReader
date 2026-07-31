@@ -27,8 +27,10 @@ public static class ServiceCollectionExtensions
             options.UseNpgsql(connectionString));
 
         services.AddScoped<IBookRepository, BookRepository>();
+        services.AddScoped<IChapterRepository, ChapterRepository>();
         services.AddScoped<IBookService, BookService>();
         services.AddScoped<IStorageService, LocalStorageService>();
+        services.AddScoped<IChapterService, ChapterService>();
         services.AddScoped<IEventPublisher, LocalEventPublisher>();
         services.AddScoped<IBookParserService, BookParserService>();
         services.AddScoped<IEventHandler<BookUploadedEvent>, BookUploadedEventHandler>();

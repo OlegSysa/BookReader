@@ -1,11 +1,10 @@
-﻿using BookReader.Core.Enums;
+﻿using BookReader.API.Models.Responses;
+using BookReader.Core.Enums;
 
 namespace BookReader.API.Models.Requests
 {
-    public class UploadBookResponse
+    public class UploadBookResponse : BaseApiResponse
     {
-        public int Code { get; set; }
-        public bool Success { get; set; }
         public BookStatus Status { get; set; }
     }
 }

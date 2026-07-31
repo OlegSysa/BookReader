@@ -1,4 +1,5 @@
-﻿using BookReader.Core.Abstract.Repositories;
+﻿using BookReader.Core.Abstract.Events;
+using BookReader.Core.Abstract.Repositories;
 using BookReader.Core.Abstract.Services;
 using BookReader.Core.DTOs.Models;
 using BookReader.Core.Enums;
@@ -14,6 +15,7 @@ public class BookServiceTests
     private Mock<IBookRepository> _repository = null!;
     private Mock<IStorageService> _storage = null!;
     private Mock<ILogger<BookService>> _logger = null!;
+    private Mock<IEventPublisher> _publisher = null!;
 
     private BookService _service = null!;
 
@@ -23,10 +25,12 @@ public class BookServiceTests
         _repository = new Mock<IBookRepository>();
         _storage = new Mock<IStorageService>();
         _logger = new Mock<ILogger<BookService>>();
+        _publisher = new Mock<IEventPublisher>();
         var configuration = new ConfigurationBuilder().Build();
         _service = new BookService(
             _repository.Object,
             _storage.Object,
+            _publisher.Object,
             configuration,
             _logger.Object);
     }
