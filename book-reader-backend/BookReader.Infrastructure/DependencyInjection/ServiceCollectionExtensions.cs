@@ -28,6 +28,7 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<IBookRepository, BookRepository>();
         services.AddScoped<IChapterRepository, ChapterRepository>();
+        services.AddScoped<ITranslationRespository, TranslationRepository>();
         services.AddScoped<IBookService, BookService>();
         services.AddScoped<IStorageService, LocalStorageService>();
         services.AddScoped<IChapterService, ChapterService>();

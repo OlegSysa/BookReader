@@ -3,9 +3,6 @@ using BookReader.Core.Business;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using StackExchange.Redis;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Text.Json;
 
 namespace BookReader.Infrastructure.Services
@@ -29,11 +26,10 @@ namespace BookReader.Infrastructure.Services
             return JsonSerializer.Deserialize<T>(json);
         }
 
-        public async Task SetAsync<T>(string key, T value, TimeSpan expiration)
+        public async Task SetAsync<T>(string key, T value, TimeSpan? expiration = null)
         {
             var json = JsonSerializer.Serialize(value);
-
-            await _database.StringSetAsync(key, json, expiration);
+            await _database.StringSetAsync(key, json, expiration, false);
         }
 
         public Task RemoveAsync(string key)

@@ -1,36 +1,73 @@
-﻿using BookReader.Core.Abstract.Services;
+﻿using BookReader.Core.Abstract.Repositories;
+using BookReader.Core.Abstract.Services;
 using BookReader.Core.Business;
 using BookReader.Core.DTOs.Models;
+using BookReader.Core.Entities;
 using DeepL;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using BookReader.Core.Extensions;
+using System.Text.Json;
 
 namespace BookReader.Infrastructure.Services
 {
     public class TranslationService : BaseService<TranslationService>, ITranslationService
     {
-        public TranslationService(IConfiguration config,
+        private readonly ICacheService _cacheService;
+        private readonly ITranslationRespository _translationRespository;
+        public TranslationService(ICacheService cacheService,
+            ITranslationRespository translationRespository,
+            IConfiguration config,
             ILogger<TranslationService> logger) : base(config, logger)
         {
+            _cacheService = cacheService;
+            _translationRespository = translationRespository;
         }
         public async Task<ServiceResult<string>> TranslateAsync(string input, CancellationToken token)
         {
             try
             {
-                var apikey = _config["ApiKeys:DeplKey"]!;
-                var client = new DeepLClient(apikey);
+                var sourceLang = _config["Translation:SourceLang"]!;
+                var targetLang = _config["Translation:TargetLang"]!;
+                var translationKey = input.BuildChacheKey(sourceLang, targetLang);
+                var cachedTranslation = await _cacheService.GetAsync<string>(translationKey);
+                if (!string.IsNullOrEmpty(cachedTranslation))
+                    return new ServiceResult<string>(cachedTranslation, string.Empty);
 
-                var translatedText = await client.TranslateTextAsync(
-                    input,
-                    null,
-                    LanguageCode.Ukrainian);
-                return new ServiceResult<string>(translatedText.Text, string.Empty);
+                var result = await ExecuteTraslation(input, token);
+                var translationEntity = await _translationRespository.GetAsync(sourceLang, targetLang, input);
+                if (translationEntity == null)
+                {
+                    translationEntity = new Translation()
+                        {
+                            SourceLang = sourceLang,
+                            TargetLang = targetLang,
+                            SourceWord = input,
+                            TranslatedWord = result
+                        };
+                    await _translationRespository.AddTranslationAsync(translationEntity, token);
+                }
+                
+                await _cacheService.SetAsync<string>(translationKey, result);
+                return new ServiceResult<string>(result, string.Empty);
             }
             catch (Exception e)
             {
                 _logger.LogError("Cannot translate input string. Error: {message}", e.Message);
                 return new ServiceResult<string>(string.Empty, e.Message);
             }
+        }
+
+        private async Task<string> ExecuteTraslation(string input, CancellationToken token)
+        {
+            var apikey = _config["ApiKeys:DeplKey"]!;
+            var client = new DeepLClient(apikey);
+
+            var translatedText = await client.TranslateTextAsync(
+                input,
+                null,
+                LanguageCode.Ukrainian, cancellationToken: token);
+            return translatedText.Text;
         }
     }
 }

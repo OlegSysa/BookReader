@@ -1,5 +1,6 @@
 using BookReader.Infrastructure.DependencyInjection;
 using Serilog;
+using StackExchange.Redis;
 namespace BookReader.API
 {
     public class Program
@@ -25,6 +26,11 @@ namespace BookReader.API
             {
                 options.Configuration =
                     builder.Configuration["ConnectionStrings:RedisConnection"];
+            });
+            builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
+            {
+                return ConnectionMultiplexer.Connect(
+                    builder.Configuration["ConnectionStrings:RedisConnection"]!);
             });
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
