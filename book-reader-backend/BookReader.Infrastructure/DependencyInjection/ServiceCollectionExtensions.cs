@@ -33,6 +33,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IChapterService, ChapterService>();
         services.AddScoped<IEventPublisher, LocalEventPublisher>();
         services.AddScoped<IBookParserService, BookParserService>();
+        services.AddScoped<ITranslationService, TranslationService>();
         services.AddScoped<IEventHandler<BookUploadedEvent>, BookUploadedEventHandler>();
         services.AddScoped<IParser, EpubParser>();
 

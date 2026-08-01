@@ -1,0 +1,11 @@
+span[data-word-id] {
+    cursor: pointer;
+    text-decoration: underline;
+    text-decoration-style: solid;
+    text-underline-offset: 2px;
+    transition: color 0.2s ease;
+}
+
+span[data-word-id]:hover {
+    color: #1976d2;
+}

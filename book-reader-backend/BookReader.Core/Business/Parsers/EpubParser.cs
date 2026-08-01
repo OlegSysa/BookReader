@@ -46,11 +46,17 @@ namespace BookReader.Core.Business.Parsers
                         for (int k = 0; k < words.Length; k++) 
                         { 
                             var w = words[k];
-                            var wordSpan = document.CreateElement("span");
-                            wordSpan.TextContent = w;
+                            if (k + 1 == words.Length)
+                                w += ". ";
+                                var wordSpan = document.CreateElement("span");
+                            wordSpan.TextContent = w + ' ';
                             wordSpan.SetAttribute("data-word-id", k.ToString());
+
                             sentenceSpan.Append(wordSpan);
+                            
+                              
                         }
+
                         p.AppendChild(sentenceSpan);
                     }
                 }

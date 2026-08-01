@@ -17,12 +17,12 @@ namespace BookReader.API.Controllers
         }
 
         [HttpGet]
-        public async Task<GetChapterResponse> Get(int bookId, int selector, CancellationToken token)
+        public async Task<ApiResponse<Chapter>> Get(int bookId, int selector, CancellationToken token)
         {
             var res = await _chapterService.GetRequiredChapterAsync(bookId, selector, token);
-            return new GetChapterResponse()
+            return new ApiResponse<Chapter>()
             {
-                Chapter = res.Data,
+                Data = res.Data,
                 Code = res.Data != null ? 200 : 500,
                 Success = res.Data != null,
                 ErrorMessage = res.Error

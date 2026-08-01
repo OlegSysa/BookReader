@@ -1,4 +1,6 @@
-﻿using BookReader.API.Models.Requests;
+﻿using AngleSharp.Io;
+using BookReader.API.Models.Requests;
+using BookReader.API.Models.Responses;
 using BookReader.Core.Abstract.Services;
 using BookReader.Core.DTOs.Models;
 using BookReader.Core.Entities;
@@ -25,21 +27,20 @@ namespace BookReader.API.Controllers
         }
 
         [HttpPost]
-        public async Task<UploadBookResponse> Add([FromForm] UploadBookRequest request, CancellationToken token)
+        public async Task<ApiResponse<Book>> Add([FromForm] UploadBookRequest request, CancellationToken token)
         {
             var userId = 1;//ToDo
-            
+
             await using var stream = request.File.OpenReadStream();
 
             var fileDetails = new UploadBookDetails(request.File.FileName, request.File.Length, userId);
             var res = await _bookService.UploadAsync(stream, fileDetails, token);
-            var response = new UploadBookResponse()
+            return new ApiResponse<Book>()
             {
+                Data = res.Book,
                 Code = res.Status != BookStatus.Failed ? 200 : 500,
-                Success = res.Status != BookStatus.Failed,
-                Status = res.Status
+                Success = res.Status != BookStatus.Failed
             };
-            return response;
         }
 
     }
