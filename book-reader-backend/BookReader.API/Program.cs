@@ -21,6 +21,11 @@ namespace BookReader.API
                         .AllowAnyMethod();
                 });
             });
+            builder.Services.AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration =
+                    builder.Configuration["ConnectionStrings:RedisConnection"];
+            });
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
