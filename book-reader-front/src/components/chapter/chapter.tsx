@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import { getChapter, getTranslation } from "../../api/apiClient";
+import { getChapter, getWordTranslation, getSentenceTranslation } from "../../api/apiClient";
 import "./styles.css";
 
 export default function Chapter() {
     const [chapter, setChapter] = useState(null);
-    const bookId = "17"; // Replace with the actual book ID
+    const bookId = "29"; // Replace with the actual book ID
     const selector = "1"; // Replace with the actual chapter selector
     useEffect(() => {
         const loadChapter = async () => {
@@ -17,14 +17,31 @@ export default function Chapter() {
 
     const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
         const target = e.target as HTMLElement;
-        debugger;
-        if (!target.hasAttribute("data-word-id"))
+
+        if (target.hasAttribute("data-word-id")) {
+            const loadWordTranslation = async () => {
+                const result = await getWordTranslation(target.textContent || "");
+                console.log(result.data);
+            };
+            loadWordTranslation();
             return;
-        const loadTranslation = async () => {
-            const result = await getTranslation(target.textContent || "");
-            console.log(result.data);
-        };
-        loadTranslation();
+        }
+        if (target.classList.contains("translate-button")) {
+            const loadSentenceTranslation = async () => {
+                const sentenceContainer = target.closest(".sentence")!;
+
+                const sentenceId = sentenceContainer.dataset.sentenceId!;
+                const sentence = sentenceContainer
+                    .querySelector(".sentence-text")!
+                    .textContent!
+                    .trim();
+
+                var result = await getSentenceTranslation(sentenceId, sentence);
+
+                console.log(result.data);
+            };
+            loadSentenceTranslation();
+        }
     };
 
     if (!chapter) {
