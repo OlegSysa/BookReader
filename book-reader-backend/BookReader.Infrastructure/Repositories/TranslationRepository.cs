@@ -20,12 +20,16 @@ namespace BookReader.Infrastructure.Repositories
             return res > 0;
         }
 
-        public async Task<Translation?> GetAsync(string sourceLang, string targetLang, string input)
+        public async Task<ICollection<Translation>> GetAllAsNoTrackingAsync(CancellationToken token) =>
+            await _context.Translations.AsNoTracking().ToListAsync(token);
+
+        public async Task<Translation?> GetAsync(string sourceLang, string targetLang, string input, CancellationToken token)
         {
             return await _context.Translations.FirstOrDefaultAsync(t => 
                 t.SourceLang == sourceLang &&
                 t.TargetLang == targetLang &&
-                t.SourceWord == input);
+                t.SourceWord == input, token);
         }
+
     }
 }

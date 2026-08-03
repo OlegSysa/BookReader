@@ -27,5 +27,19 @@ namespace BookReader.API.Controllers
                 ErrorMessage = res.Error
             };
         }
+
+        [HttpGet]
+        [Route("sentence-translation")]
+        public async Task<ApiResponse<string>> TranslateSentence(int sentenceId,string value, CancellationToken token)
+        {
+            var res = await _translationService.TranslateSentenceAsync(sentenceId, value, token);
+            return new ApiResponse<string>()
+            {
+                Data = res.Data,
+                Code = res.Data != null ? 200 : 500,
+                Success = res.Data != null,
+                ErrorMessage = res.Error
+            };
+        }
     }
 }

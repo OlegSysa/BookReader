@@ -37,7 +37,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ITranslationService, TranslationService>();
         services.AddScoped<ICacheService, RedisService>();
         services.AddScoped<IEventHandler<BookUploadedEvent>, BookUploadedEventHandler>();
-        services.AddScoped<IParser, EpubParser>();
+        services.AddScoped<IParser, EpubToHtmlParser>();
+        services.AddHostedService<WarmupService>();
 
         return services;
     }

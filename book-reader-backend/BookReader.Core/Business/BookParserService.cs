@@ -1,9 +1,11 @@
 ﻿using BookReader.Core.Abstract.Repositories;
 using BookReader.Core.Abstract.Services;
+using BookReader.Core.DTOs.Models;
 using BookReader.Core.Entities;
 using BookReader.Core.Enums;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using System.Text.Json;
 
 namespace BookReader.Core.Business
 {
@@ -34,6 +36,17 @@ namespace BookReader.Core.Business
             if (parser == null)
                 return false;
 
+            //var jsonInsight = await parser.ParseFile(book.StoragePath);
+            //var convertedJson = JsonSerializer.Serialize(jsonInsight);
+            //var chapter = new Chapter()
+            //    {
+            //        Content = convertedJson,
+            //        BookId = bookId,
+            //        Created = DateTime.UtcNow,
+            //        SelectorIndex = 1
+            //    };
+
+            //var res = await _chapterRepository.Add(chapter);
             var chapters = await parser.ParseFile(book.StoragePath);
             var chapterEntities = chapters.Select(c =>
             {
@@ -46,6 +59,7 @@ namespace BookReader.Core.Business
                 };
             });
             var res = await _chapterRepository.AddBatchAsync(chapterEntities, token);
+
             return true;
         }
 

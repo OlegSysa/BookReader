@@ -1,18 +1,16 @@
 ﻿using AngleSharp;
 using AngleSharp.Dom;
 using BookReader.Core.Abstract.Services;
+using BookReader.Core.DTOs.Models;
 using BookReader.Core.Enums;
-using System;
-using System.Collections.Generic;
-using System.Reflection.Metadata;
-using System.Text;
+using System.Text.RegularExpressions;
 using VersOne.Epub;
 
 namespace BookReader.Core.Business.Parsers
 {
-    public class EpubParser : IParser
+    public class EpubToHtmlParser : IParser
     {
-        private readonly string _selectors = "p, h1, h2, h3, h4, h5, h6, li, blockquote";
+        private readonly string _selectors = "p, h1, h2, h3, h4, h5, h6, li, blockquote, img";
         public BookExtension Extension => BookExtension.epub;
 
         public async Task<Dictionary<int, string>> ParseFile(string path)
@@ -29,35 +27,46 @@ namespace BookReader.Core.Business.Parsers
                 { 
                     var p = paragraphs[i];
                     p.SetAttribute("data-paragraph-id", i.ToString());
-                    if (string.IsNullOrEmpty(p.TextContent))
+                    var isImg = p.GetSelector() == "img";
+                    if (string.IsNullOrEmpty(p.TextContent) || isImg)
                         continue;
-                    
-                    var sentences = p.Text().Split(['.',';',':']);
+
+                    var sentences = Regex.Matches(p.Text(), @"[^.!?]+(?:[.!?]+|$)")
+                        .Select(m => m.Value.Trim())
+                        .ToList();
                     p.InnerHtml = string.Empty;
-                    for (int j = 0; j < sentences.Length; j++)
+                    for (int j = 0; j < sentences.Count; j++)
                     {
                         var s = sentences[j];
                         if (string.IsNullOrEmpty(s))
                             continue;
+                        var container = document.CreateElement("div");
+                        container.SetAttribute("data-sentence-id", j.ToString());
+                        container.SetAttribute("class", "sentence");
+
                         var sentenceSpan = document.CreateElement("span");
-                        sentenceSpan.SetAttribute("data-sentence-id", j.ToString());
-                       
+                        sentenceSpan.SetAttribute("class", "sentence-text");
+                        container.Append(sentenceSpan);
+
                         var words = s.Split(' ', ',');
                         for (int k = 0; k < words.Length; k++) 
                         { 
                             var w = words[k];
-                            if (k + 1 == words.Length)
-                                w += ". ";
-                                var wordSpan = document.CreateElement("span");
-                            wordSpan.TextContent = w + ' ';
+                            var wordSpan = document.CreateElement("span");
+                            wordSpan.TextContent = w;
                             wordSpan.SetAttribute("data-word-id", k.ToString());
-
                             sentenceSpan.Append(wordSpan);
-                            
-                              
+                            var isLastWordInSentence = k == words.Length - 1;
+                            sentenceSpan.Append(document.CreateTextNode(" "));
                         }
 
-                        p.AppendChild(sentenceSpan);
+                        var translateButtonElement = document.CreateElement("button");
+                        translateButtonElement.TextContent = "Translate";
+                        translateButtonElement.SetAttribute("class", "translate-button");
+                        container.Append(translateButtonElement);
+                        var newLineElement = document.CreateElement("br");
+                        container.Append(newLineElement);
+                        p.Append(container);
                     }
                 }
                results.Add(index, document.DocumentElement.OuterHtml);

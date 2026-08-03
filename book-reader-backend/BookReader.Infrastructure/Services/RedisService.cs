@@ -31,6 +31,12 @@ namespace BookReader.Infrastructure.Services
             var json = JsonSerializer.Serialize(value);
             await _database.StringSetAsync(key, json, expiration, false);
         }
+        public async Task SetBatchAsync<T>(Dictionary<string, T> dict, TimeSpan? expiration = null)
+        {
+            var tasks = dict.Select(item => 
+            _database.StringSetAsync(item.Key, JsonSerializer.Serialize(item.Value), expiration, false));
+            await Task.WhenAll(tasks);
+        }
 
         public Task RemoveAsync(string key)
         {

@@ -1,4 +1,5 @@
-﻿using BookReader.Core.Enums;
+﻿using BookReader.Core.DTOs.Models;
+using BookReader.Core.Enums;
 using System;
 using System.Collections.Generic;
 using System.Text;
