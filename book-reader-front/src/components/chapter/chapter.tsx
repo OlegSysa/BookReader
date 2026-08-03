@@ -4,7 +4,7 @@ import "./styles.css";
 
 export default function Chapter() {
     const [chapter, setChapter] = useState(null);
-    const bookId = "30"; // Replace with the actual book ID
+    const bookId = "31"; // Replace with the actual book ID
     const selector = "1"; // Replace with the actual chapter selector
     const [popup, setPopup] = useState<{
         text: string;

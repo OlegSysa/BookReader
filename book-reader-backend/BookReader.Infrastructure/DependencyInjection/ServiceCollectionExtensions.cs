@@ -18,7 +18,7 @@ namespace BookReader.Infrastructure.DependencyInjection;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection Resolve(
+    public static IServiceCollection ResolveDependencies(
         this IServiceCollection services,
         IConfiguration configuration)
     {
@@ -32,7 +32,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IBookService, BookService>();
         services.AddScoped<IStorageService, LocalStorageService>();
         services.AddScoped<IChapterService, ChapterService>();
-        services.AddScoped<IEventPublisher, LocalEventPublisher>();
+        services.AddScoped<IEventPublisher, RabbitMqEventPublisher>();
         services.AddScoped<IBookParserService, BookParserService>();
         services.AddScoped<ITranslationService, TranslationService>();
         services.AddScoped<ICacheService, RedisService>();
@@ -42,4 +42,6 @@ public static class ServiceCollectionExtensions
 
         return services;
     }
+
+
 }

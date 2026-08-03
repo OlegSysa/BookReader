@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <PackageReference Include="DeepL.net" />
+    <PackageReference Include="MassTransit" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

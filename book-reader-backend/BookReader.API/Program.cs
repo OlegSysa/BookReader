@@ -1,4 +1,6 @@
 using BookReader.Infrastructure.DependencyInjection;
+using BookReader.Infrastructure.Services.Messaging.Handlers;
+using MassTransit;
 using Serilog;
 using StackExchange.Redis;
 namespace BookReader.API
@@ -11,7 +13,7 @@ namespace BookReader.API
             Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(builder.Configuration).CreateLogger();
 
             builder.Host.UseSerilog();
-            builder.Services.Resolve(builder.Configuration);
+            builder.Services.ResolveDependencies(builder.Configuration);
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("front", policy =>
@@ -26,6 +28,19 @@ namespace BookReader.API
             {
                 options.Configuration =
                     builder.Configuration["ConnectionStrings:RedisConnection"];
+            });
+            builder.Services.AddMassTransit(x =>
+            {
+                x.AddConsumer<UploadBookConsumer>();
+                x.UsingRabbitMq((context, cfg) =>
+                {
+                    cfg.Host("localhost", "/", h =>
+                    {
+                        h.Username("guest");
+                        h.Password("guest");
+                    });
+                    cfg.ConfigureEndpoints(context);
+                });
             });
             builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
             {
