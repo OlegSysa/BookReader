@@ -9,3 +9,19 @@ span[data-word-id] {
 span[data-word-id]:hover {
     color: #1976d2;
 }
+
+.translation-popup {
+    position: fixed;
+
+    transform: translate(-50%, -100%);
+
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+
+    padding: 10px 14px;
+
+    box-shadow: 0 4px 12px rgba(0, 0, 0, .15);
+
+    z-index: 9999;
+}

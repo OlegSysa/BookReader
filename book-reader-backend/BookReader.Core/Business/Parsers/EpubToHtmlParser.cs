@@ -63,6 +63,22 @@ namespace BookReader.Core.Business.Parsers
                         var translateButtonElement = document.CreateElement("button");
                         translateButtonElement.TextContent = "Translate";
                         translateButtonElement.SetAttribute("class", "translate-button");
+                        translateButtonElement.InnerHtml = """
+                            <svg xmlns="http://www.w3.org/2000/svg"
+                             width="18"
+                             height="18"
+                             viewBox="0 0 24 24"
+                             fill="none"
+                             stroke="currentColor"
+                             stroke-width="2"
+                             stroke-linecap="round"
+                             stroke-linejoin="round">
+                            <path d="M5 8h14"/>
+                            <path d="M5 12h6"/>
+                            <path d="M13 20l4-10 4 10"/>
+                            <path d="M14.5 16h5"/>
+                            </svg>
+                            """;
                         container.Append(translateButtonElement);
                         var newLineElement = document.CreateElement("br");
                         container.Append(newLineElement);
