@@ -10,9 +10,11 @@ using BookReader.Infrastructure.Repositories;
 using BookReader.Infrastructure.Services;
 using BookReader.Infrastructure.Services.Messaging;
 using BookReader.Infrastructure.Services.Messaging.Handlers;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using StackExchange.Redis;
 
 namespace BookReader.Infrastructure.DependencyInjection;
 
@@ -22,10 +24,6 @@ public static class ServiceCollectionExtensions
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        var connectionString = configuration.GetConnectionString("DatabaseConnection");
-        services.AddDbContext<AppDbContext>(options =>
-            options.UseNpgsql(connectionString));
-
         services.AddScoped<IBookRepository, BookRepository>();
         services.AddScoped<IChapterRepository, ChapterRepository>();
         services.AddScoped<ITranslationRespository, TranslationRepository>();
@@ -40,6 +38,29 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IParser, EpubToHtmlParser>();
         services.AddHostedService<WarmupService>();
 
+        return services;
+    }
+
+    public static IServiceCollection AddInfrastructureServices(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        var connectionString = configuration.GetConnectionString("DatabaseConnection");
+
+        services.AddDbContext<AppDbContext>(options =>
+            options.UseNpgsql(connectionString));
+
+        services.AddStackExchangeRedisCache(options =>
+        {
+            options.Configuration = configuration["ConnectionStrings:RedisConnection"];
+        });
+
+        services.AddSingleton<IConnectionMultiplexer>(_ =>
+        {
+            return ConnectionMultiplexer.Connect(
+                configuration["ConnectionStrings:RedisConnection"]!);
+        });
+       
         return services;
     }
 

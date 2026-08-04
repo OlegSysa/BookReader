@@ -10,10 +10,23 @@ namespace BookReader.API
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-            Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(builder.Configuration).CreateLogger();
-
             builder.Host.UseSerilog();
-            builder.Services.ResolveDependencies(builder.Configuration);
+            Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(builder.Configuration).CreateLogger();
+            
+            builder.Services
+                .ResolveDependencies(builder.Configuration)
+                .AddInfrastructureServices(builder.Configuration);
+            builder.Services.AddMassTransit(x =>
+            {
+                x.UsingRabbitMq((context, cfg) =>
+                {
+                    cfg.Host("localhost", "/", h =>
+                    {
+                        h.Username("guest");
+                        h.Password("guest");
+                    });
+                });
+            });
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("front", policy =>
@@ -23,29 +36,6 @@ namespace BookReader.API
                         .AllowAnyHeader()
                         .AllowAnyMethod();
                 });
-            });
-            builder.Services.AddStackExchangeRedisCache(options =>
-            {
-                options.Configuration =
-                    builder.Configuration["ConnectionStrings:RedisConnection"];
-            });
-            builder.Services.AddMassTransit(x =>
-            {
-                x.AddConsumer<UploadBookConsumer>();
-                x.UsingRabbitMq((context, cfg) =>
-                {
-                    cfg.Host("localhost", "/", h =>
-                    {
-                        h.Username("guest");
-                        h.Password("guest");
-                    });
-                    cfg.ConfigureEndpoints(context);
-                });
-            });
-            builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
-            {
-                return ConnectionMultiplexer.Connect(
-                    builder.Configuration["ConnectionStrings:RedisConnection"]!);
             });
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();

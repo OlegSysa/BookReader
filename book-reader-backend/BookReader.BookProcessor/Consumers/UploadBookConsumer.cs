@@ -1,11 +1,8 @@
 ﻿using BookReader.Core.Abstract.Services;
 using BookReader.Core.Events;
 using MassTransit;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace BookReader.Infrastructure.Services.Messaging.Handlers
+namespace BookReader.BookProcessor.Consumers
 {
     public class UploadBookConsumer : IConsumer<BookUploadedEvent>
     {
@@ -18,8 +15,8 @@ namespace BookReader.Infrastructure.Services.Messaging.Handlers
         public async Task Consume(ConsumeContext<BookUploadedEvent> context)
         {
             await _bookParserService.ParseBook(
-            context.Message.BookId,
-            context.CancellationToken);
+                context.Message.BookId,
+                context.CancellationToken);
         }
     }
 }
