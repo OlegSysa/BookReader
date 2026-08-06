@@ -25,17 +25,15 @@ public static class ServiceCollectionExtensions
         IConfiguration configuration)
     {
         services.AddScoped<IBookRepository, BookRepository>();
-        services.AddScoped<IChapterRepository, ChapterRepository>();
         services.AddScoped<ITranslationRespository, TranslationRepository>();
         services.AddScoped<IBookService, BookService>();
         services.AddScoped<IStorageService, LocalStorageService>();
-        services.AddScoped<IChapterService, ChapterService>();
+        services.AddScoped<IDocumentNodeService, DocumentNodeService>();
         services.AddScoped<IEventPublisher, RabbitMqEventPublisher>();
         services.AddScoped<IBookParserService, BookParserService>();
         services.AddScoped<ITranslationService, TranslationService>();
         services.AddScoped<ICacheService, RedisService>();
-        services.AddScoped<IEventHandler<BookUploadedEvent>, BookUploadedEventHandler>();
-        services.AddScoped<IParser, EpubToHtmlParser>();
+        //services.AddScoped<IEventHandler<BookUploadedEvent>, BookUploadedEventHandler>();
         services.AddHostedService<WarmupService>();
 
         return services;

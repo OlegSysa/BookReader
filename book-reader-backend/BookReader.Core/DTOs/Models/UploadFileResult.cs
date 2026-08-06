@@ -5,5 +5,5 @@ using System.Text;
 
 namespace BookReader.Core.DTOs.Models
 {
-     public sealed record UploadFileRawResult(BookStatus Status, string Path);
+     public sealed record UploadFileResult(BookStatus Status, string Path);
 }

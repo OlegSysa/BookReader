@@ -12,16 +12,16 @@ namespace BookReader.Core.Business
     public class BookParserService : BaseService<BookParserService>, IBookParserService
     {
         private readonly IBookRepository _repository;
-        private readonly IChapterRepository _chapterRepository;
         private readonly IEnumerable<IParser> _parsers;
-        public BookParserService(IBookRepository repository,
-            IChapterRepository chapterRepository,
+        private readonly IStorageService _storageService;
+        public BookParserService(IStorageService storageService,
+            IBookRepository repository,
             IConfiguration config,
             ILogger<BookParserService> logger,
             IEnumerable<IParser> parsers) : base(config, logger)
         {
+            _storageService = storageService;
             _repository = repository;
-            _chapterRepository = chapterRepository;
             _parsers = parsers;
         }
         public async Task<bool> ParseBook(int bookId, CancellationToken token)
@@ -36,29 +36,20 @@ namespace BookReader.Core.Business
             if (parser == null)
                 return false;
 
-            //var jsonInsight = await parser.ParseFile(book.StoragePath);
-            //var convertedJson = JsonSerializer.Serialize(jsonInsight);
-            //var chapter = new Chapter()
-            //    {
-            //        Content = convertedJson,
-            //        BookId = bookId,
-            //        Created = DateTime.UtcNow,
-            //        SelectorIndex = 1
-            //    };
+            book.Status = BookStatus.ParseProcessing;
+            await _repository.SaveChangesAsync();
 
-            //var res = await _chapterRepository.Add(chapter);
             var chapters = await parser.ParseFile(book.StoragePath);
-            var chapterEntities = chapters.Select(c =>
-            {
-                return new Chapter()
-                {
-                    Content = c.Value,
-                    BookId = bookId,
-                    Created = DateTime.UtcNow,
-                    SelectorIndex = c.Key
-                };
-            });
-            var res = await _chapterRepository.AddBatchAsync(chapterEntities, token);
+            var storageRootPath = _config["Storage:ParsedBooksPath"] ?? string.Empty;
+            
+            var savingResult = await _storageService.SaveParsedBookToStorageAsync(book.UserId, book.Id,
+                storageRootPath,
+                    chapters,
+                    token);
+
+            book.ParsedFilesPath = savingResult.Path;
+            book.Status = BookStatus.Ready;
+            await _repository.SaveChangesAsync();
 
             return true;
         }

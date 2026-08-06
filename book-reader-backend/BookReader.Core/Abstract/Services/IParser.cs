@@ -9,6 +9,7 @@ namespace BookReader.Core.Abstract.Services
     public interface IParser
     {
         BookExtension Extension { get; }
-        Task<Dictionary<int, string>> ParseFile(string path);
+        //Task<Dictionary<int, string>> ParseFile(string path);
+        Task<IEnumerable<DocumentNode>> ParseFile(string path);
     }
 }

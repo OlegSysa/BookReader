@@ -38,8 +38,11 @@ namespace BookReader.Core.Services
                     _logger.LogInformation($"Can not upload file. Invalid file details {details.FileName}");
                     return new UploadBookResult(null, BookStatus.Failed);
                 }
-                
-                var savingResult = await _storageService.SaveBookToStorageAsync(stream, details.FileName, details.UserId, token);
+                var storageRootPath = _config["Storage:BooksPath"] ?? string.Empty;
+                var savingResult = await _storageService.SaveBookToStorageAsync(storageRootPath,
+                    stream,
+                    details.FileName,
+                    details.UserId, token);
                 if (savingResult.Status == BookStatus.Failed)
                 {
                     _logger.LogError($"Can not upload file {details.FileName}. Issue with file storage");
@@ -54,7 +57,6 @@ namespace BookReader.Core.Services
                     UserId = details.UserId,
                     StoragePath = savingResult.Path
                 };
-
                 var metadataSavingResult = await _bookRepository.AddNewBook(newBook);
                 if (!metadataSavingResult)
                 {

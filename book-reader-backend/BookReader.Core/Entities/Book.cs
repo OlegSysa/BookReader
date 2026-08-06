@@ -15,11 +15,11 @@ namespace BookReader.Core.Entities
 
         public required string StoragePath { get; set; }
 
+        public string? ParsedFilesPath { get; set; }
         public long FileSize { get; set; }
 
         public required BookStatus Status { get; set; }
 
         public DateTime CreatedAtUtc { get; set; }
-        public ICollection<Chapter> Chapters { get; set; } = new List<Chapter>();
     }
 }

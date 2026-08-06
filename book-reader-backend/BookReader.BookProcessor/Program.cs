@@ -23,10 +23,10 @@ namespace BookReader.BookProcessor
             builder.Services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(connectionString));
             //builder.Services.ResolveDependencies(builder.Configuration);
+            builder.Services.AddScoped<IStorageService, LocalStorageService>();
             builder.Services.AddScoped<IBookRepository, BookRepository>();
-            builder.Services.AddScoped<IChapterRepository, ChapterRepository>();
             builder.Services.AddScoped<IBookParserService, BookParserService>();
-            builder.Services.AddScoped<IParser, EpubToHtmlParser>();
+            builder.Services.AddScoped<IParser, EpubToJsonParser>(); ;
             builder.Services.AddMassTransit(x =>
             {
                 x.AddConsumer<UploadBookConsumer>();

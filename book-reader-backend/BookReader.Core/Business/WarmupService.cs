@@ -28,7 +28,7 @@ namespace BookReader.Core.Business
             var allTranslations = await translationRepository.GetAllAsNoTrackingAsync(cancellationToken);
             var translationDict = allTranslations
                 .ToDictionary(t => 
-                t.SourceWord.BuildChacheKey(t.SourceLang, t.TargetLang),
+                t.SourceWord.BuildChacheTranslationKey(t.SourceLang, t.TargetLang),
                 t => t.TranslatedWord);
 
            

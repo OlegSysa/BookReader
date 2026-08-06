@@ -12,5 +12,10 @@ namespace BookReader.Infrastructure.Repositories
         {
             _context = context;
         }
+
+        public Task SaveChangesAsync()
+        {
+            return _context.SaveChangesAsync();
+        }
     }
 }

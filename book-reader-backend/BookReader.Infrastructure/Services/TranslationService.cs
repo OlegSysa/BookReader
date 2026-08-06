@@ -29,7 +29,7 @@ namespace BookReader.Infrastructure.Services
             {
                 var sourceLang = _config["Translation:SourceLang"]!;
                 var targetLang = _config["Translation:TargetLang"]!;
-                var translationKey = input.BuildChacheKey(sourceLang, targetLang);
+                var translationKey = input.BuildChacheTranslationKey(sourceLang, targetLang);
                 var cachedTranslation = await _cacheService.GetAsync<string>(translationKey);
                 if (!string.IsNullOrEmpty(cachedTranslation))
                     return new ServiceResult<string>(cachedTranslation, string.Empty);

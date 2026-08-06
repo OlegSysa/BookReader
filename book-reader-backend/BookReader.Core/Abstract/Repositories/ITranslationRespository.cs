@@ -5,7 +5,7 @@ using System.Text;
 
 namespace BookReader.Core.Abstract.Repositories
 {
-    public interface ITranslationRespository
+    public interface ITranslationRespository : IRepository
     {
         public Task<bool> AddTranslationAsync(Translation translation, CancellationToken token);
         public Task<Translation?> GetAsync(string sourceLang, string targetLang, string input, CancellationToken token);

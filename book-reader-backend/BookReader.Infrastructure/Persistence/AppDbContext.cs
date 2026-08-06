@@ -16,7 +16,6 @@ namespace BookReader.Infrastructure.Persistence
         }
 
         public DbSet<Book> Books => Set<Book>();
-        public DbSet<Chapter> Chapters => Set<Chapter>();
         public DbSet<Translation> Translations => Set<Translation>();
     }
 }

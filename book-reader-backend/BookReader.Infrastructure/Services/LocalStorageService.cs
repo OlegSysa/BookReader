@@ -1,9 +1,11 @@
 ﻿using BookReader.Core.Abstract.Services;
 using BookReader.Core.Business;
 using BookReader.Core.DTOs.Models;
+using BookReader.Core.Entities;
 using BookReader.Core.Enums;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using System.Text.Json;
 
 namespace BookReader.Infrastructure.Services
 {
@@ -13,13 +15,12 @@ namespace BookReader.Infrastructure.Services
             ILogger<LocalStorageService> logger) : base(_config, logger)
         {
         }
-        public async Task<UploadFileRawResult> SaveBookToStorageAsync(Stream stream, 
+        public async Task<UploadFileResult> SaveBookToStorageAsync(string storagePath, Stream stream, 
             string fileName,int userId,CancellationToken token)
         {
-            var storageRootPath = _config["Storage:BooksPath"] ?? string.Empty;
-            var storageUserPath = Path.Combine(storageRootPath, userId.ToString());
+            var storageUserPath = Path.Combine(storagePath, userId.ToString());
             if (string.IsNullOrEmpty(storageUserPath))
-                return new UploadFileRawResult(BookStatus.Failed, storageUserPath);
+                return new UploadFileResult(BookStatus.Failed, storageUserPath);
             if (!Directory.Exists(storageUserPath))
             {
                 Directory.CreateDirectory(storageUserPath);
@@ -27,7 +28,7 @@ namespace BookReader.Infrastructure.Services
             var filePath = Path.Combine(storageUserPath, fileName);
             await using var fileStream = File.Create(filePath);
             await stream.CopyToAsync(fileStream, token);
-            return new UploadFileRawResult(BookStatus.SavedToStorage, filePath);
+            return new UploadFileResult(BookStatus.SavedToStorage, filePath);
         }
 
         public async Task<bool> DeleteBookFromStorage(int userId, string fileName)
@@ -45,5 +46,32 @@ namespace BookReader.Infrastructure.Services
             }
             return true;
         }
+
+        public async Task<UploadFileResult> SaveParsedBookToStorageAsync(int userId, int bookId,
+            string storageParsedFilesPath,
+            IEnumerable<DocumentNode> data,
+            CancellationToken token)
+        {
+            var bookPath = Path.Combine(storageParsedFilesPath, userId.ToString(), bookId.ToString());
+            if (!Directory.Exists(bookPath))
+            {
+                Directory.CreateDirectory(bookPath);
+            }
+            foreach (var (chapter, index) in data.Select((chapter, index) => (chapter, index)))
+            {
+                var fileName = Path.Combine(bookPath, $"{index + 1}.json");
+ 
+                await using var stream = File.Create(fileName);
+                await JsonSerializer.SerializeAsync(stream, chapter, new JsonSerializerOptions
+                {
+                    WriteIndented = true
+                });
+            }
+            return new UploadFileResult(BookStatus.Ready, bookPath);
+        }
+
+        public Task<Stream> OpenReadAsync(string path, CancellationToken cancellationToken = default)  => 
+            Task.FromResult<Stream>(File.OpenRead(path));
+      
     }
 }

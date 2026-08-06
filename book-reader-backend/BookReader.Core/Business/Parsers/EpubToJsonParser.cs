@@ -1,4 +1,5 @@
 ﻿using AngleSharp;
+using AngleSharp.Css.Dom;
 using AngleSharp.Dom;
 using BookReader.Core.Abstract.Services;
 using BookReader.Core.DTOs.Models;
@@ -8,34 +9,50 @@ using System.Xml.Linq;
 using VersOne.Epub;
 namespace BookReader.Core.Business.Parsers
 {
-    public class EpubToJsonParser //: IParser
+    public class EpubToJsonParser : IParser
     {
         private readonly string _selectors = "p, h1, h2, h3, h4, h5, h6,img, li, blockquote";
+        private readonly IStorageService _storageService;
         public BookExtension Extension => BookExtension.epub;
-
-        public async Task<JsonInsight> ParseFile(string path)
+        public EpubToJsonParser(IStorageService storageService)
         {
-            var results = new Dictionary<int, string>();
-            var book = await EpubReader.ReadBookAsync(path);
-            var insightModel = new JsonInsight();
+            _storageService = storageService;
+        }
+        public async Task<IEnumerable<DocumentNode>> ParseFile(string path)
+        {
+
+            var chaptersResult = new List<DocumentNode>();
+            using var stream = await _storageService.OpenReadAsync(path);
+            var book = await EpubReader.ReadBookAsync(stream);
             foreach (var (chapter, index) in book.ReadingOrder.Select((chapter, index) => (chapter, index)))
             {
                 var context = BrowsingContext.New(Configuration.Default);
                 IDocument document = await context.OpenAsync(req => req.Content(chapter.Content));
+                
+                var chapterElement = new DocumentNode()
+                {
+                    NodeType = TextNodeType.Chapter
+                };
+
+                chapterElement.Attributes.Add("data-chapter-id", index.ToString());
+                chaptersResult.Add(chapterElement);
+
                 var paragraphs = document.QuerySelectorAll(_selectors);
-                //document.Body?.SetAttribute("data-chapter-id", index.ToString());
                 for (int i = 0; i < paragraphs.Count; i++)
                 {
                     var p = paragraphs[i];
                     var pStyles = p.GetAttribute("style");
-                    var parTextObject = new Paragraph()
+                    var paragraph = new DocumentNode()
                     {
-                        OrderValueId = $"data-paragraph-id-{i}",
-                        CssStyles = pStyles,
-                        Selector = p.TagName.ToLower(),
-                        ImageSrc = p.GetAttribute("src")
+                        NodeType = TextNodeType.Paragraph
                     };
-                  
+                    chapterElement.Children.Add(paragraph);
+                    paragraph.Attributes.Add("data-paragraph-id", i.ToString());
+                    if (pStyles != null)
+                    {
+                        paragraph.Attributes.Add("style", pStyles);
+                    }
+                    
                     if (string.IsNullOrEmpty(p.TextContent))
                         continue;
 
@@ -46,32 +63,30 @@ namespace BookReader.Core.Business.Parsers
                     for (int j = 0; j < sentences.Count; j++)
                     {
                         var s = sentences[j];
-                        var sentenceTextObject = new Sentence()
-                        {
-                            OrderValueId = $"data-sentence-id-{j}",
-                            TextValues = new List<TextValue>()
-                        };
                         if (string.IsNullOrEmpty(s))
                             continue;
-
+                        var sentenceTextObject = new DocumentNode()
+                        {
+                            NodeType = TextNodeType.Sentence
+                        };
+                        sentenceTextObject.Attributes.Add("data-sentence-id", j.ToString());
+                        paragraph.Children.Add(sentenceTextObject);
                         var words = s.Split(' ', ',');
                         for (int k = 0; k < words.Length; k++)
                         {
                            var w = words[k];
-                           var textValue = new TextValue()
+                           var textValue = new DocumentNode()
                            {
-                               OrderValueId = $"data-word-id-{k}",
-                               Value = w
+                              Value = w,
+                              NodeType = TextNodeType.Word
                            };
-                            sentenceTextObject.TextValues.Add(textValue);                           
+                            textValue.Attributes.Add("data-word-id", k.ToString());
+                            sentenceTextObject.Children.Add(textValue);                           
                         }
-
-                        parTextObject.Sentences.Add(sentenceTextObject);
                     }
-                    insightModel.Paragraphs.Add(parTextObject);
                 }
             }
-            return insightModel;
+            return chaptersResult;
         }
     }
 }

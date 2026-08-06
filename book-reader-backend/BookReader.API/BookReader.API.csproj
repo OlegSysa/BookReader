@@ -8,6 +8,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Logs\**" />
+    <Compile Remove="Storage\**" />
+    <Content Remove="Logs\**" />
+    <Content Remove="Storage\**" />
+    <EmbeddedResource Remove="Logs\**" />
+    <EmbeddedResource Remove="Storage\**" />
+    <None Remove="Logs\**" />
+    <None Remove="Storage\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\BookReader.Core\BookReader.Core.csproj" />
     <ProjectReference Include="..\BookReader.Infrastructure\BookReader.Infrastructure.csproj" />
   </ItemGroup>

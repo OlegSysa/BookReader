@@ -20,6 +20,9 @@ namespace BookReader.Infrastructure.Persistence.Configurations
                 .HasMaxLength(500)
                 .IsRequired();
 
+            builder.Property(x => x.ParsedFilesPath)
+                .HasMaxLength(500);
+
             builder.Property(x => x.FileSize)
                 .IsRequired();
 

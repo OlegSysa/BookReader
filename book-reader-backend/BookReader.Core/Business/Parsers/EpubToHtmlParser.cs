@@ -8,7 +8,7 @@ using VersOne.Epub;
 
 namespace BookReader.Core.Business.Parsers
 {
-    public class EpubToHtmlParser : IParser
+    public class EpubToHtmlParser //: IParser
     {
         private readonly string _selectors = "p, h1, h2, h3, h4, h5, h6, li, blockquote, img";
         public BookExtension Extension => BookExtension.epub;
