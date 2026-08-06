@@ -87,14 +87,14 @@ namespace BookReader.Core.Business
             if (element.NodeType == TextNodeType.Sentence)
             {
                 htmlNode.SetAttribute("class", "sentence-text");
-                var container = doc.CreateElement("div");
+                var container = doc.CreateElement("span");
                 var sentenceId = element.Attributes.GetValueOrDefault("data-sentence-id");
                 if (!string.IsNullOrEmpty(sentenceId))
                 {
                     container.SetAttribute("data-sentence-id", sentenceId);
                 }               
                 container.SetAttribute("class", "sentence");
-                container.Append(htmlNode);
+                container.AppendChild(htmlNode);
 
                 var translateButtonElement = doc.CreateElement("button");
                 translateButtonElement.TextContent = "Translate";
@@ -107,10 +107,10 @@ namespace BookReader.Core.Business
                               <path d="M12 3a15 15 0 0 0 0 18"/>
                             </svg>
                             """;
-                container.Append(translateButtonElement);
+                container.AppendChild(translateButtonElement);
                 var newLine = doc.CreateElement("br");
-                container.Append(newLine);
-                parrent.Append(container);
+                container.AppendChild(newLine);
+                parrent.AppendChild(container);
             }
             else 
             {

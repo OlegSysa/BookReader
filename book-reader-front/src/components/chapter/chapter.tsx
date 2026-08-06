@@ -1,11 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { getChapter, getWordTranslation, getSentenceTranslation } from "../../api/apiClient";
 import "./styles.css";
 
 export default function Chapter() {
     const [chapter, setChapter] = useState(null);
-    const bookId = "48"; // Replace with the actual book ID
-    const selector = "2"; // Replace with the actual chapter selector
+    const bookId = "48";
+    const selector = "2";
+    const pageRef = useRef<HTMLDivElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
+
     const [popup, setPopup] = useState<{
         text: string;
         x: number;
@@ -14,13 +17,46 @@ export default function Chapter() {
     useEffect(() => {
         const loadChapter = async () => {
             const result = await getChapter(bookId, selector);
-            debugger;
             setChapter(result.data);
         };
         loadChapter();
     }, []);
 
+    useEffect(() => {
+        if (!containerRef.current || !pageRef.current) {
+            return;
+        }
 
+        const pageHeight = pageRef.current.clientHeight;
+        const sentences = Array.from(
+            containerRef.current.querySelectorAll<HTMLElement>("[data-sentence-id]")
+        );
+
+        const pages: number[][] = [];
+        let currentPage: number[] = [];
+
+        let pageStart = 0;
+
+        for (const sentence of sentences) {
+            const top = sentence.offsetTop - pageStart;
+            const bottom = top + sentence.offsetHeight;
+
+            if (bottom > pageHeight && currentPage.length > 0) {
+                pages.push(currentPage);
+
+                currentPage = [];
+                pageStart = sentence.offsetTop;
+            }
+
+            currentPage.push(Number(sentence.dataset.sentenceId));
+        }
+
+        if (currentPage.length > 0) {
+            pages.push(currentPage);
+        }
+
+        console.log(pages);
+    }, [chapter]);
     const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
         const target = e.target as HTMLElement;
         const word = target.closest("[data-word-id]");
@@ -65,21 +101,22 @@ export default function Chapter() {
     if (!chapter) {
         return <div>Loading...</div>;
     }
-    debugger;
     return (
         <div onClick={() => setPopup(null)}>
-            <div onClick={handleClick} dangerouslySetInnerHTML={{ __html: chapter }} />
-            {popup && (
-                <div
-                    className="translation-popup"
-                    style={{
-                        left: popup.x,
-                        top: popup.y
-                    }}
-                >
-                    {popup.text}
-                </div>
-            )}
+            <div className="reader-page" ref={pageRef}>
+                <div ref={containerRef} onClick={handleClick} dangerouslySetInnerHTML={{ __html: chapter }} />
+                {popup && (
+                    <div
+                        className="translation-popup"
+                        style={{
+                            left: popup.x,
+                            top: popup.y
+                        }}
+                    >
+                        {popup.text}
+                    </div>
+                )}
+            </div>
         </div>
     );
 }

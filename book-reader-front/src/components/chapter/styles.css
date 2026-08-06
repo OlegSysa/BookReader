@@ -1,3 +1,13 @@
+.reader-page {
+    width: min(900px, 90vw);
+    /* height: calc(80vh - 64px); */
+
+    margin: 20px auto;
+    padding: 40px;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
 span[data-word-id] {
     cursor: pointer;
     text-decoration: underline;
