@@ -4,8 +4,8 @@ import "./styles.css";
 
 export default function Chapter() {
     const [chapter, setChapter] = useState(null);
-    const bookId = "31"; // Replace with the actual book ID
-    const selector = "1"; // Replace with the actual chapter selector
+    const bookId = "48"; // Replace with the actual book ID
+    const selector = "2"; // Replace with the actual chapter selector
     const [popup, setPopup] = useState<{
         text: string;
         x: number;
@@ -65,10 +65,10 @@ export default function Chapter() {
     if (!chapter) {
         return <div>Loading...</div>;
     }
-
+    debugger;
     return (
         <div onClick={() => setPopup(null)}>
-            <div onClick={handleClick} dangerouslySetInnerHTML={{ __html: chapter.content }} />
+            <div onClick={handleClick} dangerouslySetInnerHTML={{ __html: chapter }} />
             {popup && (
                 <div
                     className="translation-popup"
