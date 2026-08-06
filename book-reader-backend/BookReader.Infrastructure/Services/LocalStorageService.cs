@@ -72,6 +72,21 @@ namespace BookReader.Infrastructure.Services
 
         public Task<Stream> OpenReadAsync(string path, CancellationToken cancellationToken = default)  => 
             Task.FromResult<Stream>(File.OpenRead(path));
-      
+
+        public async Task<bool> DeleteParsedBookFromStorage(int userId, int bookId)
+        {
+            var storagePath = _config["Storage:ParsedBooksPath"] ?? string.Empty;
+            if (string.IsNullOrEmpty(storagePath) || !Directory.Exists(storagePath))
+            {
+                _logger.LogError($"Failed to delete book file. Can not find storage path.");
+                return false;
+            }
+            var dirPath = Path.Combine(storagePath, userId.ToString(), bookId.ToString());
+            if (Directory.Exists(dirPath))
+            {
+                Directory.Delete(dirPath, true);
+            }
+            return true;
+        }
     }
 }

@@ -1,12 +1,11 @@
-
 using AngleSharp;
 using BookReader.BookProcessor.Consumers;
 using BookReader.Core.Abstract.Repositories;
 using BookReader.Core.Abstract.Services;
 using BookReader.Core.Business;
 using BookReader.Core.Business.Parsers;
-using BookReader.Infrastructure.DependencyInjection;
 using BookReader.Infrastructure.Persistence;
+using BookReader.Infrastructure.Persistence.Configurations;
 using BookReader.Infrastructure.Repositories;
 using BookReader.Infrastructure.Services;
 using MassTransit;
@@ -22,11 +21,11 @@ namespace BookReader.BookProcessor
             var connectionString = builder.Configuration.GetConnectionString("DatabaseConnection");
             builder.Services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(connectionString));
-            //builder.Services.ResolveDependencies(builder.Configuration);
-            builder.Services.AddScoped<IStorageService, LocalStorageService>();
+            builder.Services.AddScoped<IStorageService, AzureStorageService>();
             builder.Services.AddScoped<IBookRepository, BookRepository>();
             builder.Services.AddScoped<IBookParserService, BookParserService>();
-            builder.Services.AddScoped<IParser, EpubToJsonParser>(); ;
+            builder.Services.AddScoped<IParser, EpubToJsonParser>();
+            builder.Services.Configure<AzureStorageOptions>(builder.Configuration.GetSection("AzureStorage"));
             builder.Services.AddMassTransit(x =>
             {
                 x.AddConsumer<UploadBookConsumer>();

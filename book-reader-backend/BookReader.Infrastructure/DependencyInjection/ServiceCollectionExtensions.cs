@@ -6,6 +6,7 @@ using BookReader.Core.Business.Parsers;
 using BookReader.Core.Events;
 using BookReader.Core.Services;
 using BookReader.Infrastructure.Persistence;
+using BookReader.Infrastructure.Persistence.Configurations;
 using BookReader.Infrastructure.Repositories;
 using BookReader.Infrastructure.Services;
 using BookReader.Infrastructure.Services.Messaging;
@@ -27,7 +28,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IBookRepository, BookRepository>();
         services.AddScoped<ITranslationRespository, TranslationRepository>();
         services.AddScoped<IBookService, BookService>();
-        services.AddScoped<IStorageService, LocalStorageService>();
+        services.AddScoped<IStorageService, AzureStorageService>();
         services.AddScoped<IDocumentNodeService, DocumentNodeService>();
         services.AddScoped<IEventPublisher, RabbitMqEventPublisher>();
         services.AddScoped<IBookParserService, BookParserService>();
@@ -58,7 +59,9 @@ public static class ServiceCollectionExtensions
             return ConnectionMultiplexer.Connect(
                 configuration["ConnectionStrings:RedisConnection"]!);
         });
-       
+
+        services.Configure<AzureStorageOptions>(configuration.GetSection("AzureStorage"));
+
         return services;
     }
 

@@ -1,7 +1,4 @@
 ﻿using BookReader.Core.DTOs.Models;
-using BookReader.Core.Entities;
-using BookReader.Core.Enums;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace BookReader.Core.Abstract.Services
 {
@@ -15,6 +12,7 @@ namespace BookReader.Core.Abstract.Services
             CancellationToken token = default);
 
         Task<bool> DeleteBookFromStorage(int userId, string fileName);
+        Task<bool> DeleteParsedBookFromStorage(int userId, int bookId);
         Task<Stream> OpenReadAsync(string path, CancellationToken cancellationToken = default);
     }
 }
