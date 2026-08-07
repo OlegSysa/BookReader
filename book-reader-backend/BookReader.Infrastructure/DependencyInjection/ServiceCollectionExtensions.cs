@@ -35,7 +35,10 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ITranslationService, TranslationService>();
         services.AddScoped<ICacheService, RedisService>();
         //services.AddScoped<IEventHandler<BookUploadedEvent>, BookUploadedEventHandler>();
-        services.AddHostedService<WarmupService>();
+        if (configuration.GetValue<bool>("Cache:WarmupEnabled"))
+        {
+            services.AddHostedService<WarmupService>();
+        }
 
         return services;
     }
