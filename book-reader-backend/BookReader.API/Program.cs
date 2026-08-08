@@ -36,10 +36,11 @@ namespace BookReader.API
             {
                 options.AddPolicy("front", policy =>
                 {
-                    policy
-                        .WithOrigins("http://localhost:5173")
-                        .AllowAnyHeader()
-                        .AllowAnyMethod();
+                    policy.WithOrigins(
+                        "http://localhost:5173",
+                        "https://green-island-05796e403.7.azurestaticapps.net")
+                    .AllowAnyHeader()
+                    .AllowAnyMethod();
                 });
             });
             builder.Services.AddControllers();
