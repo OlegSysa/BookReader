@@ -16,17 +16,22 @@ namespace BookReader.API
             builder.Services
                 .ResolveDependencies(builder.Configuration)
                 .AddInfrastructureServices(builder.Configuration);
-            builder.Services.AddMassTransit(x =>
+
+            if (builder.Configuration.GetValue<bool>("Messaging:MassTransitEnabled"))
             {
-                x.UsingRabbitMq((context, cfg) =>
+                builder.Services.AddMassTransit(x => 
                 {
-                    cfg.Host("localhost", "/", h =>
-                    {
-                        h.Username("guest");
-                        h.Password("guest");
-                    });
+                    x.UsingRabbitMq((context, cfg) =>
+                        {
+                            cfg.Host("localhost", "/", h =>
+                                {
+                                    h.Username("guest");
+                                    h.Password("guest");
+                                });
+                        });
                 });
-            });
+            }
+
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("front", policy =>

@@ -13,6 +13,7 @@ namespace BookReader.Core.Abstract.Services
 
         Task<bool> DeleteBookFromStorage(int userId, string fileName);
         Task<bool> DeleteParsedBookFromStorage(int userId, int bookId);
-        Task<Stream> OpenReadAsync(string path, CancellationToken cancellationToken = default);
+        Task<Stream> GetBookAsync(string path, CancellationToken cancellationToken = default);
+        Task<Stream> GetParsedBookAsync(string path, CancellationToken cancellationToken = default);
     }
 }

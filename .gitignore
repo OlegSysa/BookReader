@@ -79,3 +79,7 @@ Thumbs.db
 #LocalFiles
 **/Storage
 
+#Publish
+**/Properties/PublishProfiles/*.pubxml
+**/Properties/PublishProfiles/*.pubxml.user
+

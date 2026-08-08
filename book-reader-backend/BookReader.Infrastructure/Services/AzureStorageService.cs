@@ -42,9 +42,15 @@ namespace BookReader.Infrastructure.Services
             return res.Value;
         }
 
-        public async Task<Stream> OpenReadAsync(string path, CancellationToken cancellationToken = default)
+        public async Task<Stream> GetBookAsync(string path, CancellationToken cancellationToken = default)
         {
             var blobClient = _booksContainer.GetBlobClient(path);
+            return await blobClient.OpenReadAsync(cancellationToken: cancellationToken);
+        }
+
+        public async Task<Stream> GetParsedBookAsync(string path, CancellationToken cancellationToken = default)
+        {
+            var blobClient = _parsedBooksContainer.GetBlobClient(path);
             return await blobClient.OpenReadAsync(cancellationToken: cancellationToken);
         }
 

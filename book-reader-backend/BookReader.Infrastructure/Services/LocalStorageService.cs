@@ -70,8 +70,10 @@ namespace BookReader.Infrastructure.Services
             return new UploadFileResult(BookStatus.Ready, bookPath);
         }
 
-        public Task<Stream> OpenReadAsync(string path, CancellationToken cancellationToken = default)  => 
+        public Task<Stream> GetBookAsync(string path, CancellationToken cancellationToken = default)  => 
             Task.FromResult<Stream>(File.OpenRead(path));
+        public Task<Stream> GetParsedBookAsync(string path, CancellationToken cancellationToken = default) =>
+            throw new NotImplementedException();
 
         public async Task<bool> DeleteParsedBookFromStorage(int userId, int bookId)
         {

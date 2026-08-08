@@ -33,12 +33,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IEventPublisher, RabbitMqEventPublisher>();
         services.AddScoped<IBookParserService, BookParserService>();
         services.AddScoped<ITranslationService, TranslationService>();
-        services.AddScoped<ICacheService, RedisService>();
-        //services.AddScoped<IEventHandler<BookUploadedEvent>, BookUploadedEventHandler>();
-        if (configuration.GetValue<bool>("Cache:WarmupEnabled"))
-        {
-            services.AddHostedService<WarmupService>();
-        }
+        
 
         return services;
     }
@@ -51,19 +46,40 @@ public static class ServiceCollectionExtensions
 
         services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(connectionString));
-
-        services.AddStackExchangeRedisCache(options =>
-        {
-            options.Configuration = configuration["ConnectionStrings:RedisConnection"];
-        });
-
-        services.AddSingleton<IConnectionMultiplexer>(_ =>
-        {
-            return ConnectionMultiplexer.Connect(
-                configuration["ConnectionStrings:RedisConnection"]!);
-        });
-
+       
+        services.ConfigureCaching(configuration);
         services.Configure<AzureStorageOptions>(configuration.GetSection("AzureStorage"));
+
+        return services;
+    }
+
+    public static IServiceCollection ConfigureCaching(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        if (configuration["Cache:Provider"] == "Redis")
+        {
+            services.AddScoped<ICacheService, RedisService>();
+            services.AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration = configuration["ConnectionStrings:RedisConnection"];
+            });
+
+            services.AddSingleton<IConnectionMultiplexer>(_ =>
+            {
+                return ConnectionMultiplexer.Connect(
+                    configuration["ConnectionStrings:RedisConnection"]!);
+            });
+        }
+        else
+        {
+            services.AddMemoryCache();
+            services.AddScoped<ICacheService, MemoryCacheService>();
+        }
+        if (configuration.GetValue<bool>("Cache:WarmupEnabled"))
+        {
+            services.AddHostedService<WarmupService>();
+        }
 
         return services;
     }

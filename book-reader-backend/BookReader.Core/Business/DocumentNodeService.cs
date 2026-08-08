@@ -49,7 +49,7 @@ namespace BookReader.Core.Business
             if (string.IsNullOrEmpty(filePath))
                 return new ServiceResult<string>(null, $"Seems the book (Id: {bookId}) haven't been processed. The filepath is empty");
 
-            using var fileStream = await _storageService.OpenReadAsync(filePath!);
+            using var fileStream = await _storageService.GetParsedBookAsync(filePath!);
             var chapter = await JsonSerializer.DeserializeAsync<DocumentNode>(fileStream);
             if(chapter == null)
             {

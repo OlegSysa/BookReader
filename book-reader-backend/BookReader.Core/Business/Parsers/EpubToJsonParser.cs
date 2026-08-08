@@ -22,7 +22,7 @@ namespace BookReader.Core.Business.Parsers
         {
 
             var chaptersResult = new List<DocumentNode>();
-            using var stream = await _storageService.OpenReadAsync(path);
+            using var stream = await _storageService.GetBookAsync(path);
             var book = await EpubReader.ReadBookAsync(stream);
             foreach (var (chapter, index) in book.ReadingOrder.Select((chapter, index) => (chapter, index)))
             {
