@@ -1,6 +1,10 @@
 import { ENDPOINTS } from "./endpoints";
+import type { ApiResponse } from "./abstract/http";
 
-export async function getChapter(bookId, selector) {
+export async function getChapter(
+    bookId: string,
+    selector: string
+): Promise<ApiResponse<string>> {
     const response = await fetch(
         ENDPOINTS.chapter(bookId, selector)
     );
@@ -12,7 +16,9 @@ export async function getChapter(bookId, selector) {
     return await response.json();
 }
 
-export async function getWordTranslation(value) {
+export async function getWordTranslation(
+    value: string
+): Promise<ApiResponse<string>> {
     const response = await fetch(
         ENDPOINTS.translation(value)
     );
@@ -24,7 +30,10 @@ export async function getWordTranslation(value) {
     return await response.json();
 }
 
-export async function getSentenceTranslation(sentenceId, value) {
+export async function getSentenceTranslation(
+    sentenceId: string,
+    value: string
+): Promise<ApiResponse<string>> {
     const response = await fetch(
         ENDPOINTS.sentenceTranslation(sentenceId, value)
     );
@@ -35,4 +44,3 @@ export async function getSentenceTranslation(sentenceId, value) {
 
     return await response.json();
 }
-

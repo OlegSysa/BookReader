@@ -3,7 +3,7 @@ import { getChapter, getWordTranslation, getSentenceTranslation } from "../../ap
 import "./styles.css";
 
 export default function Chapter() {
-    const [chapter, setChapter] = useState(null);
+    const [chapter, setChapter] = useState<string>("");
     const bookId = "55";
     const selector = "2";
     const pageRef = useRef<HTMLDivElement>(null);
@@ -77,8 +77,7 @@ export default function Chapter() {
         const button = target.closest(".translate-button");
         if (button) {
             const loadSentenceTranslation = async () => {
-                const sentenceContainer = target.closest(".sentence")!;
-
+                const sentenceContainer = target.closest<HTMLElement>(".sentence")!;
                 const sentenceId = sentenceContainer.dataset.sentenceId!;
                 const sentence = sentenceContainer
                     .querySelector(".sentence-text")!

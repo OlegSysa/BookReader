@@ -64,6 +64,7 @@ namespace BookReader.API
             catch (Exception e)
             {
                 Log.Fatal(e, "Application terminated unexpectedly");
+                throw;
             }
             finally
             {
