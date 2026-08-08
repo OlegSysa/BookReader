@@ -5,7 +5,7 @@ function App() {
   const [status, setStatus] = useState("Loading...");
 
   useEffect(() => {
-    fetch("https://localhost:7266/api/health")
+    fetch(`${import.meta.env.VITE_API_BASE_URL}/health`)
       .then((response) => response.json())
       .then((data) => setStatus(data.status))
       .catch((error) => {
