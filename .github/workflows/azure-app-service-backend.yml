@@ -1,9 +1,7 @@
 name: Build and Deploy Backend
 
 on:
-    workflow_dispatch:
-    branches:
-      - dev
+  workflow_dispatch:
 
 jobs:
   build-and-deploy:
