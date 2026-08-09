@@ -4,6 +4,7 @@ using BookReader.Core.Abstract.Repositories;
 using BookReader.Core.Abstract.Services;
 using BookReader.Core.Business;
 using BookReader.Core.Business.Parsers;
+using BookReader.Infrastructure.DependencyInjection;
 using BookReader.Infrastructure.Persistence;
 using BookReader.Infrastructure.Persistence.Configurations;
 using BookReader.Infrastructure.Repositories;
@@ -26,23 +27,39 @@ namespace BookReader.BookProcessor
             builder.Services.AddScoped<IBookParserService, BookParserService>();
             builder.Services.AddScoped<IParser, EpubToJsonParser>();
             builder.Services.Configure<AzureStorageOptions>(builder.Configuration.GetSection("AzureStorage"));
-            if (builder.Configuration.GetValue<bool>("Messaging:MassTransitEnabled"))
+            if (builder.Configuration.GetValue<bool>("Messaging:Enabled"))
             {
                 builder.Services.AddMassTransit(x =>
                 {
                     x.AddConsumer<UploadBookConsumer>();
-                    x.UsingRabbitMq((context, cfg) =>
+
+                    if (builder.Configuration.GetValue<bool>("Messaging:ServiceBusEnabled"))
                     {
-                        cfg.Host("localhost", "/", h =>
+                        x.UsingAzureServiceBus((context, cfg) =>
                         {
-                            h.Username("guest");
-                            h.Password("guest");
+                            cfg.Host(builder.Configuration["ServiceBus:ConnectionString"]);
+
+                            cfg.ReceiveEndpoint("book-processing", e =>
+                            {
+                                e.ConfigureConsumer<UploadBookConsumer>(context);
+                            });
                         });
-                        cfg.ConfigureEndpoints(context);
-                    });
+                    }
+                    else
+                    {
+                        x.UsingRabbitMq((context, cfg) =>
+                        {
+                            cfg.Host("localhost", "/", h =>
+                            {
+                                h.Username("guest");
+                                h.Password("guest");
+                            });
+
+                            cfg.ConfigureEndpoints(context);
+                        });
+                    }
                 });
             }
-               
             var host = builder.Build();
             host.Run();
         }

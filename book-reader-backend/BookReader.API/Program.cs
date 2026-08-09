@@ -1,8 +1,7 @@
+using AngleSharp;
 using BookReader.Infrastructure.DependencyInjection;
-using BookReader.Infrastructure.Services.Messaging.Handlers;
 using MassTransit;
 using Serilog;
-using StackExchange.Redis;
 namespace BookReader.API
 {
     public class Program
@@ -17,18 +16,28 @@ namespace BookReader.API
                 .ResolveDependencies(builder.Configuration)
                 .AddInfrastructureServices(builder.Configuration);
 
-            if (builder.Configuration.GetValue<bool>("Messaging:MassTransitEnabled"))
+            if (builder.Configuration.GetValue<bool>("Messaging:Enabled"))
             {
-                builder.Services.AddMassTransit(x => 
+                builder.Services.AddMassTransit(x =>
                 {
-                    x.UsingRabbitMq((context, cfg) =>
+                    if (builder.Configuration.GetValue<bool>("Messaging:ServiceBusEnabled"))
+                    {
+                        x.UsingAzureServiceBus((context, cfg) =>
+                        {
+                            cfg.Host(builder.Configuration["ServiceBus:ConnectionString"]);
+                        });
+                    }
+                    else
+                    {
+                        x.UsingRabbitMq((context, cfg) =>
                         {
                             cfg.Host("localhost", "/", h =>
-                                {
-                                    h.Username("guest");
-                                    h.Password("guest");
-                                });
+                            {
+                                h.Username("guest");
+                                h.Password("guest");
+                            });
                         });
+                    }
                 });
             }
 

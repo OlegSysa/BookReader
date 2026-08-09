@@ -30,7 +30,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IBookService, BookService>();
         services.AddScoped<IStorageService, AzureStorageService>();
         services.AddScoped<IDocumentNodeService, DocumentNodeService>();
-        services.AddScoped<IEventPublisher, RabbitMqEventPublisher>();
+        services.AddScoped<IEventPublisher, MassTransitEventPublisher>();
         services.AddScoped<IBookParserService, BookParserService>();
         services.AddScoped<ITranslationService, TranslationService>();
         
@@ -79,6 +79,38 @@ public static class ServiceCollectionExtensions
         if (configuration.GetValue<bool>("Cache:WarmupEnabled"))
         {
             services.AddHostedService<WarmupService>();
+        }
+
+        return services;
+    }
+
+    public static IServiceCollection ConfigureMessaging(
+    this IServiceCollection services,
+    IConfiguration configuration)
+    {
+        if (configuration.GetValue<bool>("Messaging:Enabled"))
+        {
+            services.AddMassTransit(x =>
+            {
+                if (configuration.GetValue<bool>("Messaging:ServiceBusEnabled"))
+                {
+                    x.UsingAzureServiceBus((context, cfg) =>
+                    {
+                        cfg.Host(configuration["ServiceBus:ConnectionString"]);
+                    });
+                }
+                else
+                {
+                    x.UsingRabbitMq((context, cfg) =>
+                    {
+                        cfg.Host("localhost", "/", h =>
+                        {
+                            h.Username("guest");
+                            h.Password("guest");
+                        });
+                    });
+                }
+            });
         }
 
         return services;

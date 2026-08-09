@@ -3,11 +3,11 @@ using MassTransit;
 
 namespace BookReader.Infrastructure.Services
 {
-    public class RabbitMqEventPublisher : IEventPublisher
+    public class MassTransitEventPublisher : IEventPublisher
     {
         private readonly IPublishEndpoint _publishEndpoint;
 
-        public RabbitMqEventPublisher(IPublishEndpoint publishEndpoint)
+        public MassTransitEventPublisher(IPublishEndpoint publishEndpoint)
         {
             _publishEndpoint = publishEndpoint;
         }
