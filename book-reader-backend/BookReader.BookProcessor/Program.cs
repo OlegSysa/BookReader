@@ -4,7 +4,7 @@ using BookReader.Core.Abstract.Repositories;
 using BookReader.Core.Abstract.Services;
 using BookReader.Core.Business;
 using BookReader.Core.Business.Parsers;
-using BookReader.Infrastructure.DependencyInjection;
+using Microsoft.AspNetCore.Builder;
 using BookReader.Infrastructure.Persistence;
 using BookReader.Infrastructure.Persistence.Configurations;
 using BookReader.Infrastructure.Repositories;
@@ -18,7 +18,7 @@ namespace BookReader.BookProcessor
     {
         public static void Main(string[] args)
         {
-            var builder = Host.CreateApplicationBuilder(args);
+            var builder = WebApplication.CreateBuilder(args);
             var connectionString = builder.Configuration.GetConnectionString("DatabaseConnection");
             builder.Services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(connectionString));
@@ -60,8 +60,9 @@ namespace BookReader.BookProcessor
                     }
                 });
             }
-            var host = builder.Build();
-            host.Run();
+            var app = builder.Build();
+            app.MapGet("/health", () => Results.Ok("BookProcessor is running"));
+            app.Run();
         }
     }
 }
