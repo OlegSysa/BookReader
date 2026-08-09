@@ -26,20 +26,23 @@ namespace BookReader.BookProcessor
             builder.Services.AddScoped<IBookParserService, BookParserService>();
             builder.Services.AddScoped<IParser, EpubToJsonParser>();
             builder.Services.Configure<AzureStorageOptions>(builder.Configuration.GetSection("AzureStorage"));
-            builder.Services.AddMassTransit(x =>
+            if (builder.Configuration.GetValue<bool>("Messaging:MassTransitEnabled"))
             {
-                x.AddConsumer<UploadBookConsumer>();
-                x.UsingRabbitMq((context, cfg) =>
+                builder.Services.AddMassTransit(x =>
                 {
-                    cfg.Host("localhost", "/", h =>
+                    x.AddConsumer<UploadBookConsumer>();
+                    x.UsingRabbitMq((context, cfg) =>
                     {
-                        h.Username("guest");
-                        h.Password("guest");
+                        cfg.Host("localhost", "/", h =>
+                        {
+                            h.Username("guest");
+                            h.Password("guest");
+                        });
+                        cfg.ConfigureEndpoints(context);
                     });
-                    cfg.ConfigureEndpoints(context);
                 });
-            });
-
+            }
+               
             var host = builder.Build();
             host.Run();
         }
