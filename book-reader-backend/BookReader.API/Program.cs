@@ -38,7 +38,9 @@ namespace BookReader.API
                 {
                     policy.WithOrigins(
                         "http://localhost:5173",
-                        "https://green-island-05796e403.7.azurestaticapps.net")
+                        "https://green-island-05796e403.7.azurestaticapps.net",
+                        "https://www.bookly.world",
+                        "https://bookly.world")
                     .AllowAnyHeader()
                     .AllowAnyMethod();
                 });
