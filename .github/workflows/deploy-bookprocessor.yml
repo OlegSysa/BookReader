@@ -17,13 +17,13 @@ jobs:
           dotnet-version: '10.x'
 
       - name: Restore
-        run: dotnet restore BookReader.BookProcessor/BookReader.BookProcessor.csproj
+        run: dotnet restore book-reader-backend/BookReader.BookProcessor/BookReader.BookProcessor.csproj
 
       - name: Build
-        run: dotnet build BookReader.BookProcessor/BookReader.BookProcessor.csproj --configuration Release --no-restore
+        run: dotnet build book-reader-backend/BookReader.BookProcessor/BookReader.BookProcessor.csproj --configuration Release --no-restore
 
       - name: Publish
-        run: dotnet publish BookReader.BookProcessor/BookReader.BookProcessor.csproj --configuration Release --output ./publish --no-build
+        run: dotnet publish book-reader-backend/BookReader.BookProcessor/BookReader.BookProcessor.csproj --configuration Release --output ./publish --no-build
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
