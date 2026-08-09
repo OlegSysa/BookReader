@@ -1,0 +1,33 @@
+name: Build and Deploy BookProcessor
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+
+      - name: Restore
+        run: dotnet restore BookReader.BookProcessor/BookReader.BookProcessor.csproj
+
+      - name: Build
+        run: dotnet build BookReader.BookProcessor/BookReader.BookProcessor.csproj --configuration Release --no-restore
+
+      - name: Publish
+        run: dotnet publish BookReader.BookProcessor/BookReader.BookProcessor.csproj --configuration Release --output ./publish --no-build
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: bookprocessor-web-service
+          publish-profile: ${{ secrets.AZURE_BOOKPROCESSOR_PUBLISH_PROFILE }}
+          package: ./publish
