@@ -5,19 +5,21 @@ namespace BookReader.Infrastructure.Services
 {
     public class MassTransitEventPublisher : IEventPublisher
     {
-        private readonly IPublishEndpoint _publishEndpoint;
+        //private readonly IPublishEndpoint _publishEndpoint;
+        private readonly ISendEndpointProvider _sendEndpointProvider;
 
-        public MassTransitEventPublisher(IPublishEndpoint publishEndpoint)
+        public MassTransitEventPublisher(ISendEndpointProvider sendEndpointProvider)
         {
-            _publishEndpoint = publishEndpoint;
+            _sendEndpointProvider = sendEndpointProvider;
         }
 
-        public async Task PublishAsync<TEvent>(
-            TEvent e,
-            CancellationToken cancellationToken)
+        public async Task PublishAsync<TEvent>(TEvent e, CancellationToken cancellationToken) 
             where TEvent : IBusinessEvent
         {
-            await _publishEndpoint.Publish(e, CancellationToken.None);
+            var endpoint = await _sendEndpointProvider.GetSendEndpoint(
+                new Uri("queue:book-processing"));
+
+            await endpoint.Send(e, cancellationToken);
         }
     }
 }
