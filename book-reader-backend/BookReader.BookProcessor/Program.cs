@@ -41,6 +41,7 @@ namespace BookReader.BookProcessor
 
                             cfg.ReceiveEndpoint("book-processing", e =>
                             {
+                                e.ConfigureConsumeTopology = false;
                                 e.ConfigureConsumer<UploadBookConsumer>(context);
                             });
                         });
