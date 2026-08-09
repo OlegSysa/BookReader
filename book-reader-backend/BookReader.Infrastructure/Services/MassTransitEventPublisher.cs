@@ -17,7 +17,7 @@ namespace BookReader.Infrastructure.Services
             CancellationToken cancellationToken)
             where TEvent : IBusinessEvent
         {
-            await _publishEndpoint.Publish(e, cancellationToken);
+            await _publishEndpoint.Publish(e, CancellationToken.None);
         }
     }
 }
