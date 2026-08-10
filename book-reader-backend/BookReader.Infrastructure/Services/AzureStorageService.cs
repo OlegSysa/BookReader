@@ -73,29 +73,21 @@ namespace BookReader.Infrastructure.Services
             CancellationToken token = default)
         {
             var virtualDirPath = Path.Combine(userId.ToString(), bookId.ToString());
-            var tempDirName = Path.Combine(storageParsedFilesPath, Guid.NewGuid().ToString());
-            if(!Directory.Exists(tempDirName))
-            {
-                Directory.CreateDirectory(tempDirName);
-            }
             
             foreach (var (chapter, index) in data.Select((chapter, index) => (chapter, index)))
             {
                 var fileName = $"{index + 1}.json";
-                var tempFilePath = Path.Combine(tempDirName, fileName);
-                await using var stream = File.Create(tempFilePath);
-                await JsonSerializer.SerializeAsync(stream, chapter, new JsonSerializerOptions
-                {
-                    WriteIndented = true
-                });
+                await using var stream = new MemoryStream();
+
+                await JsonSerializer.SerializeAsync(
+                    stream,
+                    chapter,
+                    new JsonSerializerOptions { WriteIndented = true },
+                    token);
+                stream.Position = 0;
                 var azureBlobFilePath = Path.Combine(virtualDirPath, fileName);
                 var blobClient = _parsedBooksContainer.GetBlobClient(azureBlobFilePath);
-                stream.Position = 0;
                 var res = await blobClient.UploadAsync(stream, overwrite: false, cancellationToken: token);
-            }
-            if (Directory.Exists(tempDirName))
-            {
-                Directory.Delete(tempDirName, true);
             }
 
             return new UploadFileResult(BookStatus.SavedToStorage, virtualDirPath);
