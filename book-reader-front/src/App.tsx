@@ -1,13 +1,16 @@
 import { useEffect, useState } from "react";
-import Chapter from "./components/chapter/chapter";
-
+import MainPage from "./components/main/mainPage";
 function App() {
+
   const [status, setStatus] = useState("Loading...");
 
   useEffect(() => {
     fetch(`${import.meta.env.VITE_API_BASE_URL}/health`)
       .then((response) => response.json())
-      .then((data) => setStatus(data.status))
+      .then((data) => {
+        setStatus(data.status);
+        console.log(status);
+      })
       .catch((error) => {
         console.error(error);
         setStatus("Backend unavailable");
@@ -15,11 +18,9 @@ function App() {
   }, []);
 
   return (
-    <div style={{ padding: "2rem" }}>
-      <h1>BookReader</h1>
-      <p>Backend status: {status}</p>
+    <div>
       <div>
-        <Chapter />
+        <MainPage />
       </div>
     </div>
   );
