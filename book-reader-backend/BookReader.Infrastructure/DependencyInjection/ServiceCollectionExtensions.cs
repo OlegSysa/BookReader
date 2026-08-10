@@ -3,6 +3,7 @@ using BookReader.Core.Abstract.Repositories;
 using BookReader.Core.Abstract.Services;
 using BookReader.Core.Business;
 using BookReader.Core.Business.Parsers;
+using BookReader.Core.Entities;
 using BookReader.Core.Events;
 using BookReader.Core.Services;
 using BookReader.Infrastructure.Persistence;
@@ -12,6 +13,7 @@ using BookReader.Infrastructure.Services;
 using BookReader.Infrastructure.Services.Messaging;
 using BookReader.Infrastructure.Services.Messaging.Handlers;
 using MassTransit;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,12 +29,16 @@ public static class ServiceCollectionExtensions
     {
         services.AddScoped<IBookRepository, BookRepository>();
         services.AddScoped<ITranslationRespository, TranslationRepository>();
+        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IRoleRepository, RoleRepository>();
         services.AddScoped<IBookService, BookService>();
         services.AddScoped<IStorageService, AzureStorageService>();
         services.AddScoped<IDocumentNodeService, DocumentNodeService>();
         services.AddScoped<IEventPublisher, MassTransitEventPublisher>();
         services.AddScoped<IBookParserService, BookParserService>();
         services.AddScoped<ITranslationService, TranslationService>();
+        services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+        services.AddScoped<IAuthService, AuthService>();
         
 
         return services;

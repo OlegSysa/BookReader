@@ -1,7 +1,12 @@
 using AngleSharp;
 using BookReader.Infrastructure.DependencyInjection;
 using MassTransit;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi;
 using Serilog;
+using System.Text;
+
 namespace BookReader.API
 {
     public class Program
@@ -54,9 +59,46 @@ namespace BookReader.API
                     .AllowAnyMethod();
                 });
             });
+            builder.Services
+                .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    var jwt = builder.Configuration.GetSection("Jwt");
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+
+                        ValidIssuer = jwt["Issuer"],
+                        ValidAudience = jwt["Audience"],
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt["Key"]!))
+                    };
+                });
+
+            builder.Services.AddAuthorization();
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+            builder.Services.AddSwaggerGen(options =>
+            {
+                options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "bearer",
+                    BearerFormat = "JWT",
+                    In = ParameterLocation.Header,
+                    Description = "Enter JWT token"
+                });
+
+                options.AddSecurityRequirement(document =>
+                    new OpenApiSecurityRequirement
+                    {
+                        [new OpenApiSecuritySchemeReference("Bearer", document)] =
+                            []
+                    });
+            });
             try
             {
                 var app = builder.Build();
@@ -68,7 +110,8 @@ namespace BookReader.API
 
                 app.UseHttpsRedirection();
                 app.UseCors("front");
-
+                app.UseAuthentication();
+                app.UseAuthorization();
                 app.MapControllers();
 
                 app.Run();

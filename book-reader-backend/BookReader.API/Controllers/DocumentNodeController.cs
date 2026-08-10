@@ -3,10 +3,12 @@ using BookReader.Core.Abstract.Services;
 using BookReader.Core.DTOs.Models;
 using BookReader.Core.Entities;
 using BookReader.Core.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BookReader.API.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class DocumentNodeController : Controller

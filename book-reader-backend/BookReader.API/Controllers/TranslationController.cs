@@ -1,10 +1,12 @@
 ﻿using AngleSharp.Io;
 using BookReader.API.Models.Responses;
 using BookReader.Core.Abstract.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BookReader.API.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class TranslationController : Controller
