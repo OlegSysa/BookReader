@@ -1,15 +1,15 @@
-import { useState } from "react";
+// import { useState } from "react";
 import "./mainPageStyles.css";
 
 export default function MainPage() {
-    const [token, setToken] = useState<string>("");
+    // const [token, setToken] = useState<string>("");
 
 
-    const handleRegisterClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const handleRegisterClick = (event: React.MouseEvent<HTMLButtonElement>) => {
         const getToken = async () => {
-            const result = await register("", "");
-            setToken(result.data);
-            console.log(result.data);
+            // const result = await register("", "");
+            // setToken(result.data);
+            console.log(event);
         };
         getToken();
         return;
