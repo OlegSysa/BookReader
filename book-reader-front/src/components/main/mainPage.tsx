@@ -24,7 +24,7 @@ export default function MainPage() {
 
             <nav className="auth-buttons">
                 <button className="login-button">
-                    Login
+                    Login1
                 </button>
 
                 <button onClick={handleRegisterClick} className="register-button">
