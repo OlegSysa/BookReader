@@ -10,6 +10,7 @@ export default function MainPage() {
             // const result = await register("", "");
             // setToken(result.data);
             console.log(event);
+            console.log('test');
         };
         getToken();
         return;
