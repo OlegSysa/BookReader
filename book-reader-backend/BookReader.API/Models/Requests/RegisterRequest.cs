@@ -6,7 +6,6 @@ namespace BookReader.API.Models.Requests
     [Required]
     [EmailAddress]
     string Email,
-
     [Required]
     [MinLength(8)]
     string Password);
