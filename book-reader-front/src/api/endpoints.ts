@@ -11,6 +11,8 @@ export const ENDPOINTS = {
 
     sentenceTranslation: (sentenceId: string, text: string) =>
         `${API_BASE}/translation/sentence-translation?sentenceId=${sentenceId}&value=${text}`,
-    register: (email: string, password: string) =>
-        `${API_BASE}/auth/register?email=${email}&password=${password}`,
+    register: () =>
+        `${API_BASE}/auth/register`,
+    login: () =>
+        `${API_BASE}/auth/login`,
 };

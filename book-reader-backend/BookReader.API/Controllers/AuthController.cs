@@ -1,16 +1,14 @@
-﻿using BookReader.API.Models.Requests;
+﻿using BookReader.API.Extensions;
+using BookReader.API.Models.Requests;
 using BookReader.API.Models.Responses;
 using BookReader.Core.Abstract.Services;
-using BookReader.Core.Business;
-using BookReader.Core.Entities;
-using BookReader.Core.Enums;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BookReader.API.Controllers
 {
     [ApiController]
     [Route("api/auth")]
-    public class AuthController : ControllerBase
+    public class AuthController : BaseAPIController
     {
         private readonly IAuthService _authService;
         public AuthController(IAuthService authService)
@@ -20,31 +18,34 @@ namespace BookReader.API.Controllers
 
 
         [HttpPost("register")]
-        public async Task<ApiResponse<string>> Register(RegisterRequest request, CancellationToken token)
+        public async Task<IActionResult> Register(RegisterRequest request, CancellationToken token)
         {
             var tokenResult = await _authService.RegisterAsync(request.Email, request.Password, token);
-
-            return new ApiResponse<string>()
+            if (tokenResult.IsSuccess)
             {
-                Data = tokenResult.Data,
-                Code = string.IsNullOrEmpty(tokenResult.Error) ? 200 : 500,
-                Success = string.IsNullOrEmpty(tokenResult.Error),
-                ErrorMessage = tokenResult.Error
-            };
+                Response.SetTokenCookie(tokenResult.Data!);
+                tokenResult.Data = "success";
+            }
+
+            var statusCode = tokenResult.IsSuccess ? 
+                StatusCodes.Status201Created :
+                StatusCodes.Status409Conflict;
+            return GenerateResponse(tokenResult, statusCode);
         }
 
         [HttpPost("login")]
-        public async Task<ApiResponse<string>> Login(LoginRequest request, CancellationToken token)
+        public async Task<IActionResult> Login(LoginRequest request, CancellationToken token)
         {
             var tokenResult = await _authService.LoginAsync(request.Email, request.Password, token);
-
-            return new ApiResponse<string>()
+            if (tokenResult.IsSuccess)
             {
-                Data = tokenResult.Data,
-                Code = string.IsNullOrEmpty(tokenResult.Error) ? 200 : 401,
-                Success = string.IsNullOrEmpty(tokenResult.Error),
-                ErrorMessage = tokenResult.Error
-            };
+                Response.SetTokenCookie(tokenResult.Data!);
+                tokenResult.Data = "success";
+            }
+            var statusCode = tokenResult.IsSuccess ? 
+                StatusCodes.Status200OK :
+                StatusCodes.Status401Unauthorized;
+            return GenerateResponse(tokenResult, statusCode);
         }
     }
 }

@@ -8,6 +8,8 @@ using BookReader.Core.Enums;
 using BookReader.Core.Events;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using System.Net.NetworkInformation;
+using System.Net.WebSockets;
 
 namespace BookReader.Core.Services
 {
@@ -26,17 +28,20 @@ namespace BookReader.Core.Services
             _storageService = storageService;
             _eventPublisher = eventPublisher;
         }
-        public async Task<UploadBookResult> UploadAsync(Stream stream,
+        public async Task<ServiceResult<UploadBookResult>> UploadAsync(Stream stream,
             UploadBookDetails details,
-            CancellationToken token) 
+            CancellationToken token)
         {
             try
             {
                 var isValidFile = await ValidateUploadBookModel(details, token);
                 if (!isValidFile)
                 {
-                    _logger.LogInformation($"Can not upload file. Invalid file details {details.FileName}");
-                    return new UploadBookResult(null, BookStatus.Failed);
+                    var message = $"Can not upload file. Invalid file details {details.FileName}";
+                    _logger.LogError(message);
+                    return new ServiceResult<UploadBookResult>(
+                        new UploadBookResult(null, BookStatus.Failed), 
+                        message);
                 }
                 var storageRootPath = _config["Storage:BooksPath"] ?? string.Empty;
                 var savingResult = await _storageService.SaveBookToStorageAsync(storageRootPath,
@@ -45,11 +50,15 @@ namespace BookReader.Core.Services
                     details.UserId, token);
                 if (savingResult.Status == BookStatus.Failed)
                 {
-                    _logger.LogError($"Can not upload file {details.FileName}. Issue with file storage");
-                    return new UploadBookResult(null, savingResult.Status);
+                    var message = $"Can not upload file {details.FileName}. Issue with file storage";
+                    _logger.LogError(message);
+                    return new ServiceResult<UploadBookResult>(
+                        new UploadBookResult(null, BookStatus.Failed),
+                        message);
                 }
-                    
-                var newBook = new Book() {
+
+                var newBook = new Book()
+                {
                     OriginalFileName = details.FileName,
                     CreatedAtUtc = DateTime.UtcNow,
                     FileSize = details.FileSize,
@@ -60,25 +69,58 @@ namespace BookReader.Core.Services
                 var metadataSavingResult = await _bookRepository.AddNewBook(newBook);
                 if (!metadataSavingResult)
                 {
-                    _logger.LogError($"File was uploaded, but metadata wasn't saved to db. Filename: {details.FileName}");
+                    var message = $"File was uploaded, but metadata wasn't saved to db. Filename: {details.FileName}";
+                    _logger.LogError(message);
                     await _storageService.DeleteBookFromStorage(details.UserId, details.FileName);
-                    return new UploadBookResult(null, BookStatus.Failed);
+                    return new ServiceResult<UploadBookResult>(
+                        new UploadBookResult(null, BookStatus.Failed),
+                        message);
                 }
                 await _eventPublisher.PublishAsync(new BookUploadedEvent(newBook.Id), token);
 
-                return new UploadBookResult(newBook, newBook.Status);
+                return new ServiceResult<UploadBookResult>(
+                    new UploadBookResult(newBook, newBook.Status),
+                    null);
             }
             catch (Exception e)
             {
-                _logger.LogError($"Failed to upload book file. Exception: {e.Message}");
-                return new UploadBookResult(null, BookStatus.Failed);
+                var message = $"Failed to upload book file. Exception: {e.Message}";
+                _logger.LogError(message);
+                return new ServiceResult<UploadBookResult>(new UploadBookResult(null, BookStatus.Failed), message);
             }
-        } 
+        }
 
-        public async Task<IReadOnlyCollection<Book>> GetByUserIdAsync(int userId, CancellationToken token) =>
-             await _bookRepository.GetByUserIdAsync(userId, token);
-        public async Task<Book?> GetBookByUserAndFileNameAsync(int userId, string fileName, CancellationToken token) =>
-             await _bookRepository.GetByUserAndFileNameAsync(userId, fileName, token);
+        public async Task<ServiceResult<IReadOnlyCollection<Book>>> GetByUserIdAsync(int userId, CancellationToken token)
+        {
+            try
+            {
+                var res = await _bookRepository.GetByUserIdAsync(userId, token);
+                return new ServiceResult<IReadOnlyCollection<Book>>(res, null);
+            }
+            catch (Exception e)
+            {
+
+                return new ServiceResult<IReadOnlyCollection<Book>>(new List<Book>(),
+                    $"Failed to get books for user {userId}. Exception: {e.Message}");
+            }
+        
+        }
+        public async Task<ServiceResult<Book?>> GetBookByUserAndFileNameAsync(int userId,
+            string fileName,
+            CancellationToken token)
+        {
+            try
+            {
+                var res = await _bookRepository.GetByUserAndFileNameAsync(userId, fileName, token);
+                return new ServiceResult<Book?>(res, null);
+            }
+            catch (Exception e)
+            {
+                return new ServiceResult<Book?>(null,
+                    $"Failed to get books for user {userId}. Exception: {e.Message}");
+            }
+        }
+             
 
         private async Task<bool> ValidateUploadBookModel(UploadBookDetails details, CancellationToken token)
         {

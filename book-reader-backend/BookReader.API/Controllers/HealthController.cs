@@ -6,13 +6,8 @@ namespace BookReader.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class HealthController : ControllerBase
+    public class HealthController : BaseAPIController
     {
-        public HealthController()
-        {
-            
-        }
-
         [HttpGet]
         public object Get()
         {
@@ -21,7 +16,5 @@ namespace BookReader.API.Controllers
                 status = "Healthy"
             };
         }
-
-
     }
 }

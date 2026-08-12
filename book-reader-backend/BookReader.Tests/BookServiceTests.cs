@@ -48,7 +48,7 @@ public class BookServiceTests
             CancellationToken.None);
 
         // Assert
-        Assert.That(result.Status, Is.EqualTo(BookStatus.Failed));
-        Assert.That(result.Book, Is.Null);
+        Assert.That(result.Data?.Status, Is.EqualTo(BookStatus.Failed));
+        Assert.That(result.Data?.Book, Is.Null);
     }
 }

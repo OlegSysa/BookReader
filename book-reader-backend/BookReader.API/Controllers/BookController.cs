@@ -13,7 +13,7 @@ namespace BookReader.API.Controllers
     [Authorize]
     [Route("api/[controller]")]
     [ApiController]
-    public class BookController : Controller
+    public class BookController : BaseAPIController
     {
         private readonly IBookService _bookService;
 
@@ -23,27 +23,26 @@ namespace BookReader.API.Controllers
         }
 
         [HttpGet]
-        public async Task<IReadOnlyCollection<Book>> Get(int userId, CancellationToken token)
+        public async Task<IActionResult> Get(int userId, CancellationToken token)
         {
-            return await _bookService.GetByUserIdAsync(userId, token);
+            var res = await _bookService.GetByUserIdAsync(userId, token);
+            var statusCode = res.IsSuccess ?
+                StatusCodes.Status200OK :
+                StatusCodes.Status404NotFound;
+            return GenerateResponse(res, statusCode);
         }
 
         [HttpPost]
-        public async Task<ApiResponse<Book>> Add([FromForm] UploadBookRequest request, CancellationToken token)
+        public async Task<IActionResult> Add([FromForm] UploadBookRequest request, CancellationToken token)
         {
             var userId = 1;//ToDo
-
             await using var stream = request.File.OpenReadStream();
-
             var fileDetails = new UploadBookDetails(request.File.FileName, request.File.Length, userId);
             var res = await _bookService.UploadAsync(stream, fileDetails, token);
-            return new ApiResponse<Book>()
-            {
-                Data = res.Book,
-                Code = res.Status != BookStatus.Failed ? 200 : 500,
-                Success = res.Status != BookStatus.Failed
-            };
+            var statusCode = res.IsSuccess ?
+                StatusCodes.Status202Accepted :
+                StatusCodes.Status400BadRequest;
+            return GenerateResponse(res, statusCode);
         }
-
     }
 }

@@ -9,7 +9,7 @@ namespace BookReader.API.Controllers
     [Authorize]
     [Route("api/[controller]")]
     [ApiController]
-    public class TranslationController : Controller
+    public class TranslationController : BaseAPIController
     {
         private readonly ITranslationService _translationService;
         public TranslationController(ITranslationService translationService)
@@ -18,30 +18,24 @@ namespace BookReader.API.Controllers
         }
 
         [HttpGet]
-        public async Task<ApiResponse<string>> Translate(string value, CancellationToken token)
+        public async Task<IActionResult> Translate(string value, CancellationToken token)
         {
             var res = await _translationService.TranslateAsync(value, token);
-            return new ApiResponse<string>()
-            {
-                Data = res.Data,
-                Code = res.Data != null ? 200 : 500,
-                Success = res.Data != null,
-                ErrorMessage = res.Error
-            };
+            var statusCode = res.IsSuccess ?
+                StatusCodes.Status200OK :
+                StatusCodes.Status404NotFound;
+            return GenerateResponse(res, statusCode);
         }
 
         [HttpGet]
         [Route("sentence-translation")]
-        public async Task<ApiResponse<string>> TranslateSentence(int sentenceId,string value, CancellationToken token)
+        public async Task<IActionResult> TranslateSentence(int sentenceId, string value, CancellationToken token)
         {
             var res = await _translationService.TranslateSentenceAsync(sentenceId, value, token);
-            return new ApiResponse<string>()
-            {
-                Data = res.Data,
-                Code = res.Data != null ? 200 : 500,
-                Success = res.Data != null,
-                ErrorMessage = res.Error
-            };
+            var statusCode = res.IsSuccess ?
+                StatusCodes.Status200OK :
+                StatusCodes.Status404NotFound;
+            return GenerateResponse(res, statusCode);
         }
     }
 }

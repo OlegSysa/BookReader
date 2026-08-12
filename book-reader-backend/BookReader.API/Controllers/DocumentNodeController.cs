@@ -11,7 +11,7 @@ namespace BookReader.API.Controllers
     [Authorize]
     [Route("api/[controller]")]
     [ApiController]
-    public class DocumentNodeController : Controller
+    public class DocumentNodeController : BaseAPIController
     {
         private readonly IDocumentNodeService _docNodeService;
         public DocumentNodeController(IDocumentNodeService docNodeService)
@@ -20,16 +20,13 @@ namespace BookReader.API.Controllers
         }
 
         [HttpGet]
-        public async Task<ApiResponse<string>> Get(int bookId, int selector, CancellationToken token)
+        public async Task<IActionResult> Get(int bookId, int selector, CancellationToken token)
         {
             var res = await _docNodeService.GetRequiredChapterAsync(bookId, selector, token);
-            return new ApiResponse<string>()
-            {
-                Data = res.Data,
-                Code = res.Data != null ? 200 : 500,
-                Success = res.Data != null,
-                ErrorMessage = res.Error
-            };
+            var statusCode = res.IsSuccess ?
+                StatusCodes.Status200OK :
+                StatusCodes.Status404NotFound;
+            return GenerateResponse(res, statusCode);
         }
     }
 }

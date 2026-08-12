@@ -55,6 +55,7 @@ namespace BookReader.API
                         "https://green-island-05796e403.7.azurestaticapps.net",
                         "https://www.bookly.world",
                         "https://bookly.world")
+                    .AllowCredentials()
                     .AllowAnyHeader()
                     .AllowAnyMethod();
                 });
@@ -70,10 +71,17 @@ namespace BookReader.API
                         ValidateAudience = true,
                         ValidateLifetime = true,
                         ValidateIssuerSigningKey = true,
-
                         ValidIssuer = jwt["Issuer"],
                         ValidAudience = jwt["Audience"],
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt["Key"]!))
+                    };
+                    options.Events = new JwtBearerEvents
+                    {
+                        OnMessageReceived = context =>
+                        {
+                            context.Token = context.Request.Cookies["access_token"];
+                            return Task.CompletedTask;
+                        }
                     };
                 });
 
