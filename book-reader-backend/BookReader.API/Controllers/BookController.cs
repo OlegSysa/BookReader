@@ -7,6 +7,7 @@ using BookReader.Core.Entities;
 using BookReader.Core.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace BookReader.API.Controllers
 {
@@ -23,26 +24,32 @@ namespace BookReader.API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Get(int userId, CancellationToken token)
+        public async Task<IActionResult> Get(CancellationToken token)
         {
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(userIdClaim, out var userId))
+            {
+                return GenerateResponse<object>(StatusCodes.Status401Unauthorized);
+            }
             var res = await _bookService.GetByUserIdAsync(userId, token);
-            var statusCode = res.IsSuccess ?
-                StatusCodes.Status200OK :
-                StatusCodes.Status404NotFound;
-            return GenerateResponse(res, statusCode);
+            var statusCode = res.IsSuccess
+                ? StatusCodes.Status200OK
+                : StatusCodes.Status404NotFound;
+
+            return GenerateResponse(statusCode, res);
         }
 
         [HttpPost]
         public async Task<IActionResult> Add([FromForm] UploadBookRequest request, CancellationToken token)
         {
-            var userId = 1;//ToDo
+            int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId);
             await using var stream = request.File.OpenReadStream();
             var fileDetails = new UploadBookDetails(request.File.FileName, request.File.Length, userId);
             var res = await _bookService.UploadAsync(stream, fileDetails, token);
             var statusCode = res.IsSuccess ?
                 StatusCodes.Status202Accepted :
                 StatusCodes.Status400BadRequest;
-            return GenerateResponse(res, statusCode);
+            return GenerateResponse(statusCode, res);
         }
     }
 }

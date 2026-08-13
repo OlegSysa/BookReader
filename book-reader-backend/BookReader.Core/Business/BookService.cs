@@ -6,6 +6,7 @@ using BookReader.Core.DTOs.Models;
 using BookReader.Core.Entities;
 using BookReader.Core.Enums;
 using BookReader.Core.Events;
+using BookReader.Core.Extensions.Mappings;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Net.NetworkInformation;
@@ -90,17 +91,17 @@ namespace BookReader.Core.Services
             }
         }
 
-        public async Task<ServiceResult<IReadOnlyCollection<Book>>> GetByUserIdAsync(int userId, CancellationToken token)
+        public async Task<ServiceResult<IEnumerable<BookModel>>> GetByUserIdAsync(int userId, CancellationToken token)
         {
             try
             {
                 var res = await _bookRepository.GetByUserIdAsync(userId, token);
-                return new ServiceResult<IReadOnlyCollection<Book>>(res, null);
+                return new ServiceResult<IEnumerable<BookModel>>(res.ToDto(), null);
             }
             catch (Exception e)
             {
 
-                return new ServiceResult<IReadOnlyCollection<Book>>(new List<Book>(),
+                return new ServiceResult<IEnumerable<BookModel>>(new List<BookModel>(),
                     $"Failed to get books for user {userId}. Exception: {e.Message}");
             }
         

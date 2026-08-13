@@ -1,29 +1,23 @@
-//import { useEffect, useState } from "react";
 import { Routes, Route } from "react-router-dom";
+import MainLayout from "./layouts/MainLayout";
 import MainPage from "./components/main/MainPage";
-import UserPage from "./components/user/UserPage";
+import Dashboard from "./components/dashboard/Dashboard";
+import BooksPage from "./components/book/BooksPage";
+import ProfilePage from "./components/profile/Profile";
+import WordsPage from "./components/word/WordsPage";
 
 function App() {
-
-  // const [status, setStatus] = useState("Loading...");
-
-  // useEffect(() => {
-  //   fetch(`${import.meta.env.VITE_API_BASE_URL}/health`)
-  //     .then((response) => response.json())
-  //     .then((data) => {
-  //       setStatus(data.status);
-  //       console.log(status);
-  //     })
-  //     .catch((error) => {
-  //       console.error(error);
-  //       setStatus("Backend unavailable");
-  //     });
-  // }, []);
-
   return (
     <Routes>
-      <Route path="/" element={<MainPage />} />
-      <Route path="/userpage" element={<UserPage />} />
+      <Route element={<MainLayout />}>
+        <Route path="/" element={<MainPage />} />
+
+        <Route path="/dashboard" element={<Dashboard />}>
+          <Route index element={<BooksPage />} />
+          <Route path="profile" element={<ProfilePage />} />
+          <Route path="words" element={<WordsPage />} />
+        </Route>
+      </Route>
     </Routes>
   );
 }

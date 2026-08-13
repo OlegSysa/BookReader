@@ -26,7 +26,7 @@ namespace BookReader.API.Controllers
             var statusCode = res.IsSuccess ?
                 StatusCodes.Status200OK :
                 StatusCodes.Status404NotFound;
-            return GenerateResponse(res, statusCode);
+            return GenerateResponse(statusCode, res);
         }
     }
 }

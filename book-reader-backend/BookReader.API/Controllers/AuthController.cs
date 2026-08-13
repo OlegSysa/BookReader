@@ -30,7 +30,7 @@ namespace BookReader.API.Controllers
             var statusCode = tokenResult.IsSuccess ? 
                 StatusCodes.Status201Created :
                 StatusCodes.Status409Conflict;
-            return GenerateResponse(tokenResult, statusCode);
+            return GenerateResponse(statusCode, tokenResult);
         }
 
         [HttpPost("login")]
@@ -45,7 +45,7 @@ namespace BookReader.API.Controllers
             var statusCode = tokenResult.IsSuccess ? 
                 StatusCodes.Status200OK :
                 StatusCodes.Status401Unauthorized;
-            return GenerateResponse(tokenResult, statusCode);
+            return GenerateResponse(statusCode, tokenResult);
         }
     }
 }

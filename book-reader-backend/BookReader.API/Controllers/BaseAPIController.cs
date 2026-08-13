@@ -6,8 +6,10 @@ namespace BookReader.API.Controllers
 {
     public abstract class BaseAPIController : ControllerBase
     {
-        protected IActionResult GenerateResponse<T>(ServiceResult<T> result, int code)
+        protected IActionResult GenerateResponse<T>( int code, ServiceResult<T>? result = null)
         {
+            if (result == null)
+                result = new ServiceResult<T>(default, null);
             var isSuccess = string.IsNullOrEmpty(result.Error);
             var respose =  new ApiResponse<T>()
             {

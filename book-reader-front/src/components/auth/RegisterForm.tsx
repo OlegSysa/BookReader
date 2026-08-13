@@ -19,7 +19,7 @@ export default function RegisterForm({ onClose }: RegisterFormProps) {
         const result = await Register(login, password);
         if (result.success) {
             onClose();
-            navigate("/userpage");
+            navigate("/dashboard");
         }
         else {
             setError(result.errorMessage ?? "Failed to register");

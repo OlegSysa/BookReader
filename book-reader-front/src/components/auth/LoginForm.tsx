@@ -18,7 +18,7 @@ export default function LoginForm({ onClose }: LoginFormProps) {
         const result = await Login(login, password);
         if (result.success) {
             onClose();
-            navigate("/userpage");
+            navigate("/dashboard");
         }
         else {
             setError(result.errorMessage ?? "Failed to login");
