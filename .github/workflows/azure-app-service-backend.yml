@@ -23,7 +23,7 @@ jobs:
 
       - name: Apply database migrations
         env:
-          ConnectionStrings__DefaultConnection: ${{ secrets.POSTGRES_CONNECTION_STRING }}
+          ConnectionStrings__DatabaseConnection: ${{ secrets.POSTGRES_CONNECTION_STRING }}
         run: dotnet ef database update --project book-reader-backend/BookReader.Infrastructure/BookReader.Infrastructure.csproj --startup-project book-reader-backend/BookReader.API/BookReader.API.csproj
 
       - name: Build
