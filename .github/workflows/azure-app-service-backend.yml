@@ -18,6 +18,8 @@ jobs:
 
       - name: Restore
         run: dotnet restore book-reader-backend/BookReader.API/BookReader.API.csproj
+      - name: Install EF Core tools
+        run: dotnet tool install --global dotnet-ef
 
       - name: Apply database migrations
         env:
