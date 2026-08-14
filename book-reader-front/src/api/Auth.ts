@@ -1,5 +1,5 @@
 import { ENDPOINTS } from "./endpoints";
-import type { ApiResponse } from "./abstract/http";
+import type { ApiResponse } from "./models/http";
 
 export async function Register(
     email: string,
@@ -43,4 +43,18 @@ export async function Login(
     );
 
     return await response.json();
+}
+
+export async function Logout(): Promise<void> {
+    const response = await fetch(
+        ENDPOINTS.logout(),
+        {
+            method: "POST",
+            credentials: "include"
+        }
+    );
+
+    if (!response.ok) {
+        throw new Error("Failed to logout");
+    }
 }

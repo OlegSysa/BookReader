@@ -20,6 +20,7 @@ namespace BookReader.API.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterRequest request, CancellationToken token)
         {
+            Thread.Sleep(5000);
             var tokenResult = await _authService.RegisterAsync(request.Email, request.Password, token);
             if (tokenResult.IsSuccess)
             {
@@ -46,6 +47,18 @@ namespace BookReader.API.Controllers
                 StatusCodes.Status200OK :
                 StatusCodes.Status401Unauthorized;
             return GenerateResponse(statusCode, tokenResult);
+        }
+
+        [HttpPost("logout")]
+        public IActionResult Logout()
+        {
+            Response.Cookies.Delete("access_token", new CookieOptions
+            {
+                Path = "/",
+                Secure = true,
+                SameSite = SameSiteMode.None
+            });
+            return Ok();
         }
     }
 }

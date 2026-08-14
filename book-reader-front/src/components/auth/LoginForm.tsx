@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Login } from "../../api/apiClientMain";
+import { Login } from "../../api/Auth";
 import { useNavigate } from "react-router-dom";
 import "./AuthStyles.css";
 
@@ -13,15 +13,26 @@ export default function LoginForm({ onClose }: LoginFormProps) {
     const [login, setLogin] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
+
     const navigate = useNavigate();
     const handleLoginButtonClick = async () => {
-        const result = await Login(login, password);
-        if (result.success) {
-            onClose();
-            navigate("/dashboard");
+        try {
+            setIsLoading(true);
+            const result = await Login(login, password);
+            if (result.success) {
+                onClose();
+                navigate("/dashboard");
+            }
+            else {
+                setError(result.errorMessage ?? "Failed to login");
+            }
         }
-        else {
-            setError(result.errorMessage ?? "Failed to login");
+        catch {
+            setError("Failed to login");
+        }
+        finally {
+            setIsLoading(false);
         }
     };
     return (
@@ -53,8 +64,14 @@ export default function LoginForm({ onClose }: LoginFormProps) {
                 onChange={(e) => setPassword(e.target.value)}
             />
             {error && <div className="auth-form-error">{error}</div>}
-            <button onClick={handleLoginButtonClick} type="button">
-                Login
+            <button onClick={handleLoginButtonClick}
+                type="button"
+                disabled={isLoading}>
+                {isLoading ? (
+                    <span className="spinner"></span>
+                ) : (
+                    "Login"
+                )}
             </button>
         </div>
     );

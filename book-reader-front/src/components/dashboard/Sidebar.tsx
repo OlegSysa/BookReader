@@ -1,7 +1,15 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import "./Dashboard.css";
+import { Logout } from "../../api/Auth";
 
 export default function Sidebar() {
+
+    const navigate = useNavigate();
+    const handleLogout = async () => {
+        await Logout();
+        navigate("/");
+    };
+
     return (
         <aside className="dashboard-sidebar">
             <nav>
@@ -33,7 +41,7 @@ export default function Sidebar() {
                     Words
                 </NavLink>
 
-                <button className="sidebar-item">
+                <button onClick={handleLogout} className="sidebar-item">
                     Logout
                 </button>
             </nav>

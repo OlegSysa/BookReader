@@ -15,4 +15,7 @@ export const ENDPOINTS = {
         `${API_BASE}/auth/register`,
     login: () =>
         `${API_BASE}/auth/login`,
+    getUserBooks: () =>
+        `${API_BASE}/book`,
+    logout: () => `${API_BASE}/auth/logout`,
 };

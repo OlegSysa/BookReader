@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { getChapter, getWordTranslation, getSentenceTranslation } from "../../api/apiClientReading";
+import { getChapter, getWordTranslation, getSentenceTranslation } from "../../api/Book";
 import "./styles.css";
 
 export default function Chapter() {

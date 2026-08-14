@@ -20,7 +20,7 @@ export default function MainPage() {
     };
 
     return (<main className="main-page" >
-        <header className="header">
+        <header className="main-page-actions">
 
             {showRegister && (
                 <div className="auth-form-container">
@@ -40,6 +40,7 @@ export default function MainPage() {
                 <button onClick={handleLoginClick}>
                     Login
                 </button>
+                <span> | </span>
 
                 <button onClick={handleRegisterClick}>
                     Register

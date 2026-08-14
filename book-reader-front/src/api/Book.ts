@@ -1,5 +1,6 @@
 import { ENDPOINTS } from "./endpoints";
-import type { ApiResponse } from "./abstract/http";
+import type { BookModel } from "./models/book";
+import type { ApiResponse } from "./models/http";
 
 export async function getChapter(
     bookId: string,
@@ -40,6 +41,18 @@ export async function getSentenceTranslation(
 
     if (!response.ok) {
         throw new Error("Failed to load sentence translation");
+    }
+
+    return await response.json();
+}
+
+export async function getAllUserBooks(): Promise<ApiResponse<BookModel[]>> {
+    const response = await fetch(
+        ENDPOINTS.getUserBooks(),
+        { credentials: "include" });
+
+    if (!response.ok) {
+        throw new Error("Failed to load books");
     }
 
     return await response.json();

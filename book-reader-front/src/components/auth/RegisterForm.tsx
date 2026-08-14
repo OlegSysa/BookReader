@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Register } from "../../api/apiClientMain";
+import { Register } from "../../api/Auth";
 import { useNavigate } from "react-router-dom";
 import "./AuthStyles.css";
 
@@ -9,20 +9,29 @@ interface RegisterFormProps {
 
 export default function RegisterForm({ onClose }: RegisterFormProps) {
 
-
     const [login, setLogin] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
 
     const handleRegisterButtonClick = async () => {
-        const result = await Register(login, password);
-        if (result.success) {
-            onClose();
-            navigate("/dashboard");
+        setIsLoading(true);
+        try {
+            const result = await Register(login, password);
+            if (result.success) {
+                onClose();
+                navigate("/dashboard");
+            }
+            else {
+                setError(result.errorMessage ?? "Failed to register");
+            }
         }
-        else {
-            setError(result.errorMessage ?? "Failed to register");
+        catch {
+            setError("Failed to register");
+        }
+        finally {
+            setIsLoading(false);
         }
     };
     return (
@@ -37,7 +46,6 @@ export default function RegisterForm({ onClose }: RegisterFormProps) {
                 </button>
                 <h2>Register</h2>
             </div>
-
 
             <input
                 type="text"
@@ -54,8 +62,14 @@ export default function RegisterForm({ onClose }: RegisterFormProps) {
             />
             {error && <div className="auth-form-error">{error}</div>}
 
-            <button onClick={handleRegisterButtonClick} type="button">
-                Register
+            <button onClick={handleRegisterButtonClick}
+                type="button"
+                disabled={isLoading}>
+                {isLoading ? (
+                    <span className="spinner"></span>
+                ) : (
+                    "Register"
+                )}
             </button>
         </div>
     );
