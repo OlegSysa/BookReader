@@ -15,9 +15,11 @@ namespace BookReader.API.Controllers
     public class AuthController : BaseAPIController
     {
         private readonly IAuthService _authService;
-        public AuthController(IAuthService authService)
+        private readonly IConfiguration _config;
+        public AuthController(IConfiguration config, IAuthService authService)
         {
             _authService = authService;
+            _config = config;
         }
 
 
@@ -95,7 +97,8 @@ namespace BookReader.API.Controllers
             {
                 Response.SetTokenCookie(res.Data!);
             }
-            return Redirect("http://localhost:5173/dashboard");
+            var appUrl = _config["App:BaseUrl"];
+            return Redirect($"{appUrl}/dashboard");
         }
 
         [HttpGet("google-callback-register")]
@@ -117,7 +120,8 @@ namespace BookReader.API.Controllers
             {
                 Response.SetTokenCookie(res.Data!);
             }
-            return Redirect("http://localhost:5173/dashboard");
+            var appUrl = _config["App:BaseUrl"];
+            return Redirect($"{appUrl}/dashboard");
         }
     }
 }
