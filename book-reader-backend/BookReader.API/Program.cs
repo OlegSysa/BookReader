@@ -1,6 +1,7 @@
 using AngleSharp;
 using BookReader.Infrastructure.DependencyInjection;
 using MassTransit;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
@@ -62,7 +63,13 @@ namespace BookReader.API
                 });
             });
             builder.Services
-                .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddAuthentication(options =>
+                {
+                    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                })
+                .AddCookie()
                 .AddJwtBearer(options =>
                 {
                     var jwt = builder.Configuration.GetSection("Jwt");
@@ -84,6 +91,10 @@ namespace BookReader.API
                             return Task.CompletedTask;
                         }
                     };
+                }).AddGoogle(options =>
+                {
+                    options.ClientId = builder.Configuration["Authentication:Google:ClientId"]!;
+                    options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"]!;
                 });
 
             builder.Services.AddAuthorization();

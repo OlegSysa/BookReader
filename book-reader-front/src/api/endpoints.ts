@@ -18,4 +18,6 @@ export const ENDPOINTS = {
     getUserBooks: () =>
         `${API_BASE}/book`,
     logout: () => `${API_BASE}/auth/logout`,
+    googleAuth: (mode: "login" | "register") =>
+        `${API_BASE}/auth/google?mode=${mode}`,
 };

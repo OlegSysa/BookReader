@@ -1,6 +1,7 @@
 ﻿using BookReader.Core.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace BookReader.Infrastructure.Persistence.Configurations
 {

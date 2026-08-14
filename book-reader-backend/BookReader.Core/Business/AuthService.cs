@@ -53,8 +53,9 @@ namespace BookReader.Core.Business
 
         public async Task<ServiceResult<string>> LoginAsync(string email, string pass, CancellationToken token)
         {
+            Thread.Sleep(5000);
             var user = await _userRepository.GetAsync(email, token);
-            if (user == null)
+            if (user == null || user.PasswordHash == null)
                 return new ServiceResult<string>(null, "Invalid credentials");
 
             var result = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, pass);
@@ -86,6 +87,40 @@ namespace BookReader.Core.Business
                 signingCredentials: credentials);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        public async Task<ServiceResult<string>> RegisterExternalAsync(string email, string userIdentifier, CancellationToken token)
+        {
+            var user = await _userRepository.GetAsync(email, token);
+            if (user == null)
+            {
+                user = new User
+                {
+                    Email = email,
+                    RoleId = 1,
+                    ExternalId = userIdentifier
+                };
+                await _userRepository.AddAsync(user);
+            }   
+
+            var existingUser = await _userRepository.GetAsync(user.Email, token);
+            if (existingUser == null)
+            {
+                return new ServiceResult<string>(null, "Failed to register new user");
+            }
+            var jwt = GenerateToken(existingUser);
+            return new ServiceResult<string>(jwt, null);
+        }
+
+        public async Task<ServiceResult<string>> LoginExternalAsync(string email, string userIdentifier, CancellationToken token)
+        {
+            Thread.Sleep(5000);
+            var user = await _userRepository.GetByExternalIdAsync(userIdentifier, token);
+            if (user == null || user.ExternalId == null || user.ExternalId != userIdentifier)
+                return new ServiceResult<string>(null, "Invalid credentials");
+
+            var jwt = GenerateToken(user);
+            return new ServiceResult<string>(jwt, null);
         }
     }
 }

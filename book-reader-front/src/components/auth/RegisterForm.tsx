@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Register } from "../../api/Auth";
+import { Register, googleAuth } from "../../api/Auth";
 import { useNavigate } from "react-router-dom";
 import "./AuthStyles.css";
 
@@ -13,6 +13,7 @@ export default function RegisterForm({ onClose }: RegisterFormProps) {
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    const [isExternalLoading, setIsExternalLoading] = useState(false);
     const navigate = useNavigate();
 
     const handleRegisterButtonClick = async () => {
@@ -34,6 +35,12 @@ export default function RegisterForm({ onClose }: RegisterFormProps) {
             setIsLoading(false);
         }
     };
+
+    const handleGoogleRegister = () => {
+        setIsExternalLoading(true);
+        googleAuth("register");
+    };
+
     return (
         <div className="auth-form">
             <div className="auth-form-header">
@@ -70,6 +77,18 @@ export default function RegisterForm({ onClose }: RegisterFormProps) {
                 ) : (
                     "Register"
                 )}
+            </button>
+            <button
+                type="button"
+                onClick={handleGoogleRegister}
+                disabled={isExternalLoading}
+            >
+                {isExternalLoading ? (
+                    <span className="spinner"></span>
+                ) : (
+                    "Continue with Google"
+                )}
+
             </button>
         </div>
     );

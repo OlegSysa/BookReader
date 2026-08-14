@@ -8,6 +8,8 @@ namespace BookReader.Core.Abstract.Services
     {
         string GenerateToken(User user);
         Task<ServiceResult<string>> RegisterAsync(string email, string pass, CancellationToken token);
-        Task<ServiceResult<string>> LoginAsync(string email, string pass, CancellationToken token);
+        Task<ServiceResult<string>> RegisterExternalAsync(string email, string pass, CancellationToken token);
+        Task<ServiceResult<string>> LoginAsync(string email, string userIdentifier, CancellationToken token);
+        Task<ServiceResult<string>> LoginExternalAsync(string email, string userIdentifier, CancellationToken token);
     }
 }

@@ -22,19 +22,23 @@ namespace BookReader.Infrastructure.Persistence.Configurations
             builder.HasIndex(x => x.Email)
                 .IsUnique();
 
-            builder.Property(x => x.PasswordHash)
-                .IsRequired();
+            builder.Property(x => x.PasswordHash);
 
-            builder.Property(x => x.GoogleId)
+            builder.Property(x => x.ExternalId)
                 .HasMaxLength(255);
 
-            builder.HasIndex(x => x.GoogleId)
-                .IsUnique();
+            builder.HasIndex(x => x.ExternalId)
+                .IsUnique()
+                .HasFilter("\"ExternalId\" IS NOT NULL");
 
             builder.HasOne(x => x.Role)
                 .WithMany()
                 .HasForeignKey(x => x.RoleId)
                 .IsRequired();
+
+            builder.ToTable(t =>
+                t.HasCheckConstraint("CK_User_PasswordOrExternalId",
+                    "\"PasswordHash\" IS NOT NULL OR \"ExternalId\" IS NOT NULL"));
         }
     }
 }

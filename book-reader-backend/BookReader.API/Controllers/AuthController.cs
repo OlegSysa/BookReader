@@ -2,7 +2,11 @@
 using BookReader.API.Models.Requests;
 using BookReader.API.Models.Responses;
 using BookReader.Core.Abstract.Services;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace BookReader.API.Controllers
 {
@@ -59,6 +63,61 @@ namespace BookReader.API.Controllers
                 SameSite = SameSiteMode.None
             });
             return Ok();
+        }
+
+        [HttpGet("google")]
+        public IActionResult GoogleLogin(string mode)
+        {
+            var properties = new AuthenticationProperties
+            {
+                RedirectUri = $"/api/auth/google-callback-{mode}"
+            };
+
+            return Challenge(properties, GoogleDefaults.AuthenticationScheme);
+        }
+
+        [HttpGet("google-callback-login")]
+        public async Task<IActionResult> GoogleCallbackLogin(CancellationToken token)
+        {
+            var result = await HttpContext.AuthenticateAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme);
+
+            if (!result.Succeeded)
+                return Unauthorized();
+
+            var email = result.Principal.FindFirst(ClaimTypes.Email)?.Value;
+            var externalId = result.Principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(externalId))
+                return Unauthorized();
+
+            var res = await _authService.LoginExternalAsync(email, externalId, token);
+            if (res.IsSuccess)
+            {
+                Response.SetTokenCookie(res.Data!);
+            }
+            return Redirect("http://localhost:5173/dashboard");
+        }
+
+        [HttpGet("google-callback-register")]
+        public async Task<IActionResult> GoogleCallbackRegister(CancellationToken token)
+        {
+            var result = await HttpContext.AuthenticateAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme);
+
+            if (!result.Succeeded)
+                return Unauthorized();
+
+            var email = result.Principal.FindFirst(ClaimTypes.Email)?.Value;
+            var externalId = result.Principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(externalId))
+                return Unauthorized();
+
+            var res = await _authService.RegisterExternalAsync(email, externalId, token);
+            if (res.IsSuccess)
+            {
+                Response.SetTokenCookie(res.Data!);
+            }
+            return Redirect("http://localhost:5173/dashboard");
         }
     }
 }

@@ -58,3 +58,7 @@ export async function Logout(): Promise<void> {
         throw new Error("Failed to logout");
     }
 }
+
+export function googleAuth(mode: "login" | "register") {
+    window.location.href = ENDPOINTS.googleAuth(mode);
+}

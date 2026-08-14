@@ -9,8 +9,8 @@ namespace BookReader.Core.Entities
     {
         public int Id { get; set; }
         public string Email { get; set; } = null!;
-        public string PasswordHash { get; set; } = null!;
-        public string? GoogleId { get; set; }
+        public string? PasswordHash { get; set; }
+        public string? ExternalId { get; set; }
         public int RoleId { get; set; }
         public Role Role { get; set; } = null!;
     }

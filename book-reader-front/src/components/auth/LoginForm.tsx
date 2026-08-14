@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Login } from "../../api/Auth";
+import { Login, googleAuth } from "../../api/Auth";
 import { useNavigate } from "react-router-dom";
 import "./AuthStyles.css";
 
@@ -14,6 +14,7 @@ export default function LoginForm({ onClose }: LoginFormProps) {
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    const [isExternalLoading, setExternalIsLoading] = useState(false);
 
     const navigate = useNavigate();
     const handleLoginButtonClick = async () => {
@@ -34,6 +35,11 @@ export default function LoginForm({ onClose }: LoginFormProps) {
         finally {
             setIsLoading(false);
         }
+    };
+
+    const handleGoogleLogin = () => {
+        setExternalIsLoading(true);
+        googleAuth("login");
     };
     return (
         <div className="auth-form">
@@ -71,6 +77,17 @@ export default function LoginForm({ onClose }: LoginFormProps) {
                     <span className="spinner"></span>
                 ) : (
                     "Login"
+                )}
+            </button>
+            <button
+                type="button"
+                onClick={handleGoogleLogin}
+                disabled={isExternalLoading}
+            >
+                {isExternalLoading ? (
+                    <span className="spinner"></span>
+                ) : (
+                    "Continue with Google"
                 )}
             </button>
         </div>

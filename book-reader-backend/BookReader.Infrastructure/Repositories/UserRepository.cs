@@ -22,5 +22,8 @@ namespace BookReader.Infrastructure.Repositories
 
         public async Task<User?> GetAsync(string email, CancellationToken token) =>
             await _context.Users.Include(x => x.Role).FirstOrDefaultAsync(u=> u.Email == email, token);
+
+        public async Task<User?> GetByExternalIdAsync(string id, CancellationToken token) =>
+            await _context.Users.Include(x => x.Role).FirstOrDefaultAsync(u => u.ExternalId == id, token);
     }
 }
