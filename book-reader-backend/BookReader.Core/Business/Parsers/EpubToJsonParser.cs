@@ -1,6 +1,7 @@
 ﻿using AngleSharp;
 using AngleSharp.Css.Dom;
 using AngleSharp.Dom;
+using AngleSharp.Html.Parser;
 using BookReader.Core.Abstract.Services;
 using BookReader.Core.DTOs.Models;
 using BookReader.Core.Enums;
@@ -20,15 +21,17 @@ namespace BookReader.Core.Business.Parsers
         }
         public async Task<IEnumerable<DocumentNode>> ParseFile(string path)
         {
-
             var chaptersResult = new List<DocumentNode>();
             using var stream = await _storageService.GetBookAsync(path);
             var book = await EpubReader.ReadBookAsync(stream);
+            var parser = new HtmlParser();
             foreach (var (chapter, index) in book.ReadingOrder.Select((chapter, index) => (chapter, index)))
             {
-                var context = BrowsingContext.New(Configuration.Default);
-                IDocument document = await context.OpenAsync(req => req.Content(chapter.Content));
-                
+               
+                IDocument document = await parser.ParseDocumentAsync(chapter.Content);
+                var body = document.Body;
+                var all = document.All;
+                var paragraphsTest = document.QuerySelectorAll(_selectors);
                 var chapterElement = new DocumentNode()
                 {
                     NodeType = TextNodeType.Chapter
@@ -67,7 +70,8 @@ namespace BookReader.Core.Business.Parsers
                             continue;
                         var sentenceTextObject = new DocumentNode()
                         {
-                            NodeType = TextNodeType.Sentence
+                            NodeType = TextNodeType.Sentence,
+                            CharsCount = s.Length
                         };
                         sentenceTextObject.Attributes.Add("data-sentence-id", j.ToString());
                         paragraph.Children.Add(sentenceTextObject);

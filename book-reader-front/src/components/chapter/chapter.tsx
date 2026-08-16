@@ -2,10 +2,13 @@ import { useEffect, useState, useRef } from "react";
 import { getChapter, getWordTranslation, getSentenceTranslation } from "../../api/Book";
 import "./styles.css";
 
-export default function Chapter() {
+interface ChapterProps {
+    bookId: number;
+}
+
+export default function Chapter({ bookId }: ChapterProps) {
     const [chapter, setChapter] = useState<string>("");
-    const bookId = "55";
-    const selector = "2";
+    const selector = "3";
     const pageRef = useRef<HTMLDivElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
 

@@ -1,9 +1,11 @@
+
+
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 export const ENDPOINTS = {
     books: `${API_BASE}/books`,
 
-    chapter: (bookId: string, selector: string) =>
+    chapter: (bookId: number, selector: string) =>
         `${API_BASE}/documentnode?bookId=${bookId}&selector=${selector}`,
 
     translation: (value: string) =>
@@ -20,4 +22,6 @@ export const ENDPOINTS = {
     logout: () => `${API_BASE}/auth/logout`,
     googleAuth: (mode: "login" | "register") =>
         `${API_BASE}/auth/google?mode=${mode}`,
+    uploadBook: () =>
+        `${API_BASE}/book/`,
 };

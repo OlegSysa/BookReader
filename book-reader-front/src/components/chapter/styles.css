@@ -24,7 +24,7 @@ span[data-word-id]:hover {
     position: fixed;
 
     transform: translate(-50%, -100%);
-
+    color: black;
     background: white;
     border: 1px solid #ddd;
     border-radius: 8px;

@@ -44,7 +44,11 @@ namespace BookReader.API.Controllers
         {
             int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId);
             await using var stream = request.File.OpenReadStream();
-            var fileDetails = new UploadBookDetails(request.File.FileName, request.File.Length, userId);
+            var fileDetails = new UploadBookDetails(request.File.FileName,
+                request.Title,
+                request.Author,
+                request.File.Length,
+                userId);
             var res = await _bookService.UploadAsync(stream, fileDetails, token);
             var statusCode = res.IsSuccess ?
                 StatusCodes.Status202Accepted :

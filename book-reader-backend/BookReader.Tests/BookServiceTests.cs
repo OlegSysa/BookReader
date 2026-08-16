@@ -40,7 +40,7 @@ public class BookServiceTests
     {
         // Arrange
         using var stream = new MemoryStream();
-        var details = new UploadBookDetails("book.pdf", 0, 0);
+        var details = new UploadBookDetails("book.pdf", "TestTitle", "TestAuthor", 0, 0);
         // Act
         var result = await _service.UploadAsync(
             stream,

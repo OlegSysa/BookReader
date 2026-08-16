@@ -5,6 +5,7 @@ import Dashboard from "./components/dashboard/Dashboard";
 import BooksPage from "./components/book/BooksPage";
 import ProfilePage from "./components/profile/Profile";
 import WordsPage from "./components/Word/WordsPage";
+import ChapterPage from "./components/chapter/ChapterPage/ChapterPage";
 
 function App() {
   return (
@@ -17,6 +18,10 @@ function App() {
           <Route path="profile" element={<ProfilePage />} />
           <Route path="words" element={<WordsPage />} />
         </Route>
+        <Route
+          path="/books/:bookId"
+          element={<ChapterPage />}
+        />
       </Route>
     </Routes>
   );

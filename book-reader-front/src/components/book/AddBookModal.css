@@ -1,0 +1,87 @@
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: rgba(0, 0, 0, 0.45);
+
+    opacity: 0;
+    visibility: hidden;
+
+    transition: opacity 0.8s ease, transform 0.8s ease;
+
+    z-index: 1000;
+}
+
+.modal-overlay-visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.add-book-modal {
+    width: 420px;
+    padding: 24px;
+
+    background: white;
+    border-radius: 12px;
+
+    opacity: 0;
+    transform: translateY(-15px) scale(0.97);
+
+    transition:
+        opacity 0.25s ease,
+        transform 0.25s ease;
+}
+
+.add-book-modal-visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-bottom: 20px;
+}
+
+.modal-header h2 {
+    margin: 0;
+}
+
+.modal-close {
+    border: none;
+    background: transparent;
+
+    font-size: 28px;
+    cursor: pointer;
+}
+
+.add-book-modal form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.add-book-modal input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+
+    margin-top: 10px;
+}
+
+.add-book-error {
+    color: #ff6b6b;
+    font-size: 14px;
+}

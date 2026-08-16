@@ -2,9 +2,13 @@
 
 namespace BookReader.API.Models.Requests
 {
-    public class UploadBookRequest
+    public record UploadBookRequest
     {
         [Required]
-        public IFormFile File { get; set; } = default!;
+        public required IFormFile File { get; set; } = default!;
+        [Required]
+        public required string Title { get; set; }
+        [Required]
+        public required string Author { get; set; }
     }
 }

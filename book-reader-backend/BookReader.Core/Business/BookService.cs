@@ -65,7 +65,9 @@ namespace BookReader.Core.Services
                     FileSize = details.FileSize,
                     Status = BookStatus.SavedToStorage,
                     UserId = details.UserId,
-                    StoragePath = savingResult.Path
+                    StoragePath = savingResult.Path,
+                    Title = details.Title,
+                    Author = details.Author                    
                 };
                 var metadataSavingResult = await _bookRepository.AddNewBook(newBook);
                 if (!metadataSavingResult)
@@ -129,7 +131,7 @@ namespace BookReader.Core.Services
                 return false;
 
             var existingBook = await GetBookByUserAndFileNameAsync(details.UserId, details.FileName, token);
-            if (existingBook is not null)
+            if (existingBook.Data != null)
                 return false;
             var availableExtensions = _config.GetSection("BookExtensions").Get<List<string>>() ?? new List<string>();
             var fileExtension = Path.GetExtension(details.FileName);

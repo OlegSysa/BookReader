@@ -10,6 +10,7 @@ namespace BookReader.Core.DTOs.Models
         public required TextNodeType NodeType { get; set; }
         public string? Value { get; set; }
         public Dictionary<string, string> Attributes { get; set; } = new Dictionary<string, string>();
+        public int CharsCount { get; set; }
     }
 
     
