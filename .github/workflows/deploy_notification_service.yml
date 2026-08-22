@@ -1,4 +1,4 @@
-name: Build and Deploy Notification Service
+name: Notification Service
 
 on:
   workflow_dispatch:

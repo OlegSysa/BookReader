@@ -1,4 +1,4 @@
-name: Build and Deploy BookProcessor
+name: BookProcessor
 
 on:
   workflow_dispatch:
