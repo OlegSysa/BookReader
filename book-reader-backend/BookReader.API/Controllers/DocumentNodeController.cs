@@ -20,9 +20,9 @@ namespace BookReader.API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Get(int bookId, int selector, CancellationToken token)
+        public async Task<IActionResult> Get(int bookId, int chapterIndex, int pageNumber, CancellationToken token)
         {
-            var res = await _docNodeService.GetRequiredChapterAsync(bookId, selector, 1, token);
+            var res = await _docNodeService.GetRequiredChapterAsync(bookId, chapterIndex, pageNumber, token);
             var statusCode = res.IsSuccess ?
                 StatusCodes.Status200OK :
                 StatusCodes.Status404NotFound;

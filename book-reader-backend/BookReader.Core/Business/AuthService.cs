@@ -53,7 +53,6 @@ namespace BookReader.Core.Business
 
         public async Task<ServiceResult<string>> LoginAsync(string email, string pass, CancellationToken token)
         {
-            Thread.Sleep(5000);
             var user = await _userRepository.GetAsync(email, token);
             if (user == null || user.PasswordHash == null)
                 return new ServiceResult<string>(null, "Invalid credentials");
@@ -114,7 +113,6 @@ namespace BookReader.Core.Business
 
         public async Task<ServiceResult<string>> LoginExternalAsync(string email, string userIdentifier, CancellationToken token)
         {
-            Thread.Sleep(5000);
             var user = await _userRepository.GetByExternalIdAsync(userIdentifier, token);
             if (user == null || user.ExternalId == null || user.ExternalId != userIdentifier)
                 return new ServiceResult<string>(null, "Invalid credentials");

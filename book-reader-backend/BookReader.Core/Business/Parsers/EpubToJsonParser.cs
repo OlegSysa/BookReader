@@ -62,7 +62,7 @@ namespace BookReader.Core.Business.Parsers
                     var sentences = Regex.Matches(p.Text(), @"[^.!?]+(?:[.!?]+|$)")
                         .Select(m => m.Value.Trim())
                         .ToList();
-                  
+                    paragraph.CharsCount = sentences.Sum(s => s.Length);
                     for (int j = 0; j < sentences.Count; j++)
                     {
                         var s = sentences[j];
@@ -89,6 +89,7 @@ namespace BookReader.Core.Business.Parsers
                         }
                     }
                 }
+                chapterElement.CharsCount = chapterElement.Children.Sum(p => p.CharsCount);
             }
             return chaptersResult;
         }

@@ -2,13 +2,30 @@ import { ENDPOINTS } from "./endpoints";
 import type { BookModel } from "./models/book";
 import type { ApiResponse } from "./models/http";
 
+async function apiFetch(
+    url: string,
+    options: RequestInit = {}
+): Promise<Response> {
+    const response = await fetch(url, {
+        ...options,
+        credentials: "include"
+    });
+
+    if (response.status === 401) {
+        window.location.href = "/";
+        throw new Error("Unauthorized");
+    }
+
+    return response;
+}
+
 export async function getChapter(
     bookId: number,
-    selector: string
+    chapterIndex: number,
+    pageNumber: number
 ): Promise<ApiResponse<string>> {
-    const response = await fetch(
-        ENDPOINTS.chapter(bookId, selector),
-        { credentials: "include" }
+    const response = await apiFetch(
+        ENDPOINTS.chapter(bookId, chapterIndex, pageNumber)
     );
 
     if (!response.ok) {
@@ -21,9 +38,8 @@ export async function getChapter(
 export async function getWordTranslation(
     value: string
 ): Promise<ApiResponse<string>> {
-    const response = await fetch(
-        ENDPOINTS.translation(value),
-        { credentials: "include" }
+    const response = await apiFetch(
+        ENDPOINTS.translation(value)
     );
 
     if (!response.ok) {
@@ -37,9 +53,8 @@ export async function getSentenceTranslation(
     sentenceId: string,
     value: string
 ): Promise<ApiResponse<string>> {
-    const response = await fetch(
-        ENDPOINTS.sentenceTranslation(sentenceId, value),
-        { credentials: "include" }
+    const response = await apiFetch(
+        ENDPOINTS.sentenceTranslation(sentenceId, value)
     );
 
     if (!response.ok) {
@@ -50,9 +65,8 @@ export async function getSentenceTranslation(
 }
 
 export async function getAllUserBooks(): Promise<ApiResponse<BookModel[]>> {
-    const response = await fetch(
-        ENDPOINTS.getUserBooks(),
-        { credentials: "include" });
+    const response = await apiFetch(
+        ENDPOINTS.getUserBooks());
 
     if (!response.ok) {
         throw new Error("Failed to load books");
@@ -67,7 +81,7 @@ export async function uploadBook(file: File, title: string, author: string) {
     formData.append("Title", title);
     formData.append("Author", author);
 
-    const response = await fetch(ENDPOINTS.uploadBook(), {
+    const response = await apiFetch(ENDPOINTS.uploadBook(), {
         method: "POST",
         body: formData,
         credentials: "include"

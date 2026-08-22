@@ -1,11 +1,10 @@
 ﻿using BookReader.Core.Abstract.Events;
 using MassTransit;
 
-namespace BookReader.Infrastructure.Services
+namespace BookReader.Infrastructure.Services.Messaging
 {
     public class MassTransitEventPublisher : IEventPublisher
     {
-        //private readonly IPublishEndpoint _publishEndpoint;
         private readonly ISendEndpointProvider _sendEndpointProvider;
 
         public MassTransitEventPublisher(ISendEndpointProvider sendEndpointProvider)
@@ -13,11 +12,11 @@ namespace BookReader.Infrastructure.Services
             _sendEndpointProvider = sendEndpointProvider;
         }
 
-        public async Task PublishAsync<TEvent>(TEvent e, CancellationToken cancellationToken) 
+        public async Task PublishAsync<TEvent>(string queueName, TEvent e, CancellationToken cancellationToken) 
             where TEvent : IBusinessEvent
         {
             var endpoint = await _sendEndpointProvider.GetSendEndpoint(
-                new Uri("queue:book-processing"));
+                new Uri($"queue:{queueName}"));
 
             await endpoint.Send(e, cancellationToken);
         }

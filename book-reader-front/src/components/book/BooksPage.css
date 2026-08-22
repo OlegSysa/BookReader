@@ -52,7 +52,7 @@
     background: aquamarine;
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 14px;
-
+    cursor: pointer;
     backdrop-filter: blur(10px);
 
     transition:
@@ -65,50 +65,4 @@
     transform: translateY(-4px);
     background: aqua;
     border-color: rgba(255, 255, 255, 0.2);
-}
-
-.book-card-icon {
-    width: 55px;
-    height: 70px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    flex-shrink: 0;
-
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-
-    font-size: 28px;
-}
-
-.book-card-content {
-    min-width: 0;
-}
-
-.book-card h2 {
-    margin: 0 0 12px;
-
-    font-size: 18px;
-    font-weight: 600;
-
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.book-card-info {
-    display: flex;
-    gap: 12px;
-
-    font-size: 13px;
-    opacity: 0.75;
-}
-
-.book-card-date {
-    margin-top: 10px;
-
-    font-size: 13px;
-    opacity: 0.55;
 }

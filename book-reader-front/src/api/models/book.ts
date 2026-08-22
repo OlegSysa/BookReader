@@ -2,6 +2,7 @@ export interface BookModel {
     id: number;
     originalFileName: string;
     fileSize: number;
-    status: string;
+    status: number;
     createdAtUtc: string;
+    chaptersCount: number;
 }

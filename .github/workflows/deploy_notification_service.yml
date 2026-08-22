@@ -1,0 +1,33 @@
+name: Build and Deploy Notification Service
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+
+      - name: Restore
+        run: dotnet restore book-reader-backend/BookReader.NotificationService/BookReader.NotificationService.csproj
+
+      - name: Build
+        run: dotnet build book-reader-backend/BookReader.NotificationService/BookReader.NotificationService.csproj --configuration Release --no-restore
+
+      - name: Publish
+        run: dotnet publish book-reader-backend/BookReader.NotificationService/BookReader.NotificationService.csproj --configuration Release --output ./publish --no-build
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: booknotification-web-service
+          publish-profile: ${{ AZURE_BOOKNOTIFICATION_PUBLISH_PROFILE }}
+          package: ./publish

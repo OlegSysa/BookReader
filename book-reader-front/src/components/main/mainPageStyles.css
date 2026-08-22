@@ -53,10 +53,17 @@
     position: relative;
 }
 
+
 .main-page-actions {
-    position: absolute;
-    top: -50px;
-    right: 0;
+    position: fixed;
+
+    top: 28px;
+    right: 40px;
+
     display: flex;
     align-items: center;
+
+    color: white;
+
+    z-index: 100;
 }

@@ -14,7 +14,7 @@ namespace BookReader.Core.Extensions.Mappings
                 book.Id,
                 book.OriginalFileName,
                 book.FileSize,
-                book.Status,
+                (int)book.Status,
                 book.CreatedAtUtc);
         }
 

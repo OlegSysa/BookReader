@@ -1,5 +1,6 @@
-import { useParams } from "react-router-dom";
+import { NavLink, useParams } from "react-router-dom";
 import Chapter from "../chapter";
+
 
 export default function ChapterPage() {
     const { bookId } = useParams();
@@ -8,5 +9,18 @@ export default function ChapterPage() {
         return <div>Book not found</div>;
     }
 
-    return <Chapter bookId={Number(bookId)} />;
+    return (<div>
+        <nav>
+            <NavLink
+                to="/dashboard"
+                end
+                className={({ isActive }) =>
+                    `sidebar-item ${isActive ? "active" : ""}`
+                }
+            >
+                ← Back
+            </NavLink>
+        </nav>
+        <Chapter bookId={Number(bookId)} />;
+    </div>)
 }

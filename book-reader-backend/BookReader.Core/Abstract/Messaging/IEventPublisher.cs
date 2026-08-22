@@ -2,6 +2,6 @@
 {
     public interface IEventPublisher
     {
-        Task PublishAsync<TEvent>(TEvent e, CancellationToken cancellationToken) where TEvent : IBusinessEvent;
+        Task PublishAsync<TEvent>(string queueName, TEvent e, CancellationToken cancellationToken) where TEvent : IBusinessEvent;
     }
 }

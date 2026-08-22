@@ -1,8 +1,10 @@
-﻿using BookReader.Core.Abstract.Repositories;
+﻿using BookReader.Core.Abstract.Events;
+using BookReader.Core.Abstract.Repositories;
 using BookReader.Core.Abstract.Services;
 using BookReader.Core.DTOs.Models;
 using BookReader.Core.Entities;
 using BookReader.Core.Enums;
+using BookReader.Core.Events;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
@@ -14,17 +16,20 @@ namespace BookReader.Core.Business
         private readonly IBookRepository _repository;
         private readonly IEnumerable<IParser> _parsers;
         private readonly IStorageService _storageService;
+        private readonly IEventPublisher _eventPublisher;
         public BookParserService(IStorageService storageService,
             IBookRepository repository,
             IConfiguration config,
             ILogger<BookParserService> logger,
-            IEnumerable<IParser> parsers) : base(config, logger)
+            IEnumerable<IParser> parsers,
+            IEventPublisher eventPublisher) : base(config, logger)
         {
             _storageService = storageService;
             _repository = repository;
             _parsers = parsers;
+            _eventPublisher = eventPublisher;
         }
-        public async Task<bool> ParseBook(int bookId, CancellationToken token)
+        public async Task<bool> ParseBook(int userId, int bookId, CancellationToken token)
         {
             try
             {
@@ -32,37 +37,47 @@ namespace BookReader.Core.Business
                 var book = await _repository.GetByIdAsync(bookId, token);
                 if (book == null)
                 {
-                    _logger.LogError("Book with id '{BookId}' was not found.", bookId);
-                    return false;
+                    var message = $"Book with id '{{BookId}}' was not found.";
+                    _logger.LogError(message);
+                    throw new Exception(message);
                 }
                 var parser = GetParser(book.OriginalFileName);
                 if (parser == null)
                 {
-                    _logger.LogError("[BOOK PROCESSING] Parser is NULL");
-                    return false;
+                    var message = "[BOOK PROCESSING] Parser is NULL";
+                    _logger.LogError(message);
+                    throw new Exception(message);
                 }
 
-                book.Status = BookStatus.ParseProcessing;
+                book.Status = BookStatus.ProcessingStarted;
                 await _repository.SaveChangesAsync();
+                await _eventPublisher.PublishAsync("book-notifications", new BookNotificationEvent(userId, bookId, book.Status), token);
 
                 var chapters = await parser.ParseFile(book.StoragePath);
+                book.ChaptersCount = chapters.Count();
+                book.Status = BookStatus.Parsed;
+                await _repository.SaveChangesAsync();
+                await _eventPublisher.PublishAsync("book-notifications", new BookNotificationEvent(userId, bookId, book.Status), token);
                 _logger.LogInformation("[BOOK PROCESSING] PARSED. BookId: {BookId}", bookId);
-                var storageRootPath = _config["Storage:ParsedBooksPath"] ?? string.Empty;
 
+                var storageRootPath = _config["Storage:ParsedBooksPath"] ?? string.Empty;
                 var savingResult = await _storageService.SaveParsedBookToStorageAsync(book.UserId, book.Id,
                     storageRootPath,
                         chapters,
                         token);
-                _logger.LogInformation("[BOOK PROCESSING] SAVED PARSED RESULT. BookId: {BookId}, STATUS:{Status}", bookId, savingResult.Status);
                 book.ParsedFilesPath = savingResult.Path;
                 book.Status = BookStatus.Ready;
                 await _repository.SaveChangesAsync();
+                await _eventPublisher.PublishAsync("book-notifications", new BookNotificationEvent(userId, bookId, book.Status), token);
+                _logger.LogInformation("[BOOK PROCESSING] SAVED PARSED RESULT. BookId: {BookId}, STATUS:{Status}", bookId, savingResult.Status);
 
                 return true;
             }
             catch (Exception e)
             {
-                _logger.LogError("[BOOK PROCESSING] FAILED. Message: {Message}", e.Message);
+                var errorMessage = $"[BOOK PROCESSING] Failed parse book. Id: {bookId}. Message: {e.Message}";
+                _logger.LogError(errorMessage);
+                await _eventPublisher.PublishAsync("book-notifications", new BookNotificationEvent(userId, bookId, BookStatus.Failed, errorMessage), token);
                 return false;
             }
         }

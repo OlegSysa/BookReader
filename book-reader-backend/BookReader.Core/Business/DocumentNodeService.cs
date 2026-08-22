@@ -8,11 +8,7 @@ using BookReader.Core.Enums;
 using BookReader.Core.Extensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using System.ComponentModel;
-using System.Reflection.Metadata;
-using System.Text;
 using System.Text.Json;
-using System.Xml.Linq;
 
 
 namespace BookReader.Core.Business
@@ -30,67 +26,138 @@ namespace BookReader.Core.Business
              Microsoft.Extensions.Configuration.IConfiguration config,
             ILogger<DocumentNodeService> logger) : base(config, logger)
         {
-           _storageService = storageService;
+            _storageService = storageService;
             _cacheService = cacheService;
             _bookRepository = bookRepository;
         }
 
-        public async Task<ServiceResult<string>> GetRequiredChapterAsync(int bookId, int index, int pageNumber, CancellationToken token)
+        public async Task<ServiceResult<ChapterViewResult>> GetRequiredChapterAsync(int bookId,
+            int chapterIndex,
+            int pageNumber, 
+            CancellationToken token)
         {
-            var res = string.Empty;
-            var cacheKey = CacheExtensions.BuildChacheChapterKey(bookId, index);
-            var chapter = await _cacheService.GetAsync<string>(cacheKey);
+            var cacheKey = CacheExtensions.BuildChacheChapterKey(bookId, chapterIndex);
+            var chapter = await _cacheService.GetAsync<ChapterState>(cacheKey);
             if (chapter == null)
             {
                 var book = await _bookRepository.GetByIdAsync(bookId, token);
                 if (book == null || book.ParsedFilesPath == null)
-                    return new ServiceResult<string>(null, $"Cannot find book. Id:{bookId}");
-                var fileName = $"{index.ToString()}.json";
+                    return new ServiceResult<ChapterViewResult>(null, $"Cannot find book. Id:{bookId}");
+                var fileName = $"{chapterIndex.ToString()}.json";
                 var filePath = Path.Combine(book.ParsedFilesPath, fileName);
                 if (string.IsNullOrEmpty(filePath))
-                    return new ServiceResult<string>(null, $"Seems the book (Id: {bookId}) haven't been processed. The filepath is empty");
+                    return new ServiceResult<ChapterViewResult>(null, $"Seems the book (Id: {bookId}) haven't been processed. The filepath is empty");
 
                 using var fileStream = await _storageService.GetParsedBookAsync(filePath);
                 using var reader = new StreamReader(fileStream);
-                chapter = await reader.ReadToEndAsync(token);
-                if (string.IsNullOrEmpty(chapter))
-                    return new ServiceResult<string>(null, $"Cannot get text from file. Book. Id:{bookId}");
+                var rawChapter = await reader.ReadToEndAsync(token);
+                if (string.IsNullOrEmpty(rawChapter))
+                    return new ServiceResult<ChapterViewResult>(null, $"Cannot get text from file. Book. Id:{bookId}");
 
-                await _cacheService.SetAsync(cacheKey, chapter);
-                if (index > 1)
+                var chapterNode = JsonSerializer.Deserialize<DocumentNode>(rawChapter!);
+                if (chapterNode == null)
+                    return new ServiceResult<ChapterViewResult>(null, $"Cannot deserialize json from file. Book. Id:{bookId}");
+
+                var chapterPages = new List<Page>();
+                foreach (var par in chapterNode.Children)
                 {
-                    var prevChapterCacheKey = CacheExtensions.BuildChacheChapterKey(bookId, index -1);
+                    CreatePage(chapterPages, par);
+                }
+                chapter = new ChapterState()
+                { 
+                    Index = chapterIndex,
+                    Pages = chapterPages.ToDictionary(p=> p.Number),
+                    BookId = bookId,
+                    IsLastChapter = book.ChaptersCount == chapterIndex,
+                    IsLastPage = chapterPages.Count == pageNumber,
+                    NumberOfPages = chapterPages.Count
+                };
+                await _cacheService.SetAsync(cacheKey, chapter);
+                if (chapterIndex > 1)
+                {
+                    var prevChapterCacheKey = CacheExtensions.BuildChacheChapterKey(bookId, chapterIndex - 1);
                     var prevChapter = await _cacheService.GetAsync<string>(prevChapterCacheKey);
-                    if(prevChapter != null)
+                    if (prevChapter != null)
                         await _cacheService.RemoveAsync(prevChapterCacheKey);
                 }
             }
 
-            var chapterObject = JsonSerializer.Deserialize<DocumentNode>(chapter);
-            if (chapterObject == null)
-                return new ServiceResult<string>(null, $"Cannot deserialize json from file. Book. Id:{bookId}");
+            var chapterContent = await BuildChapterHtmlContent(chapter, pageNumber, chapterIndex);
+            if (string.IsNullOrEmpty(chapterContent))
+                chapterContent = "<div>Empty</div>";
+            var res = new ChapterViewResult() { 
+                Content  = chapterContent,
+                Index = chapter.Index,
+                IsLastChapter = chapter.IsLastChapter,
+                IsLastPage = chapter.IsLastPage,
+                NumberOfPages = chapter.NumberOfPages
+            };
 
-            var chapterHtmlResult = await BuildChapterHtmlContent(chapterObject, pageNumber, index);
-           
-            return new ServiceResult<string>(chapterHtmlResult, null);
-
+            return new ServiceResult<ChapterViewResult>(res, null);
         }
 
-        private async Task<string> BuildChapterHtmlContent(DocumentNode chapter,
+        private async Task<string> BuildChapterHtmlContent(ChapterState chapter,
             int pageNumber,
             int chapterIndex)
         {
             var context = BrowsingContext.New(Configuration.Default);
             var document = await context.OpenNewAsync();
 
-            //var charsOnPage = 0;
-            //var needToSkip = pageNumber * CHARS_PER_PAGE - CHARS_PER_PAGE;
-           // var filteredParagraps = chapter.Children.Select(p=> new { Count = p.Children.Sum(s=> s.CharsCount), Element = p })
-            foreach (var element in chapter.Children)
+            if (!chapter.Pages.TryGetValue(pageNumber, out var currentPage))
+                return string.Empty;
+
+            foreach (var element in currentPage!.Paragraphs)
             {
-               CreateHtmlElement(document.Body!, element!, document);
+                CreateHtmlElement(document.Body!, element!, document);
             }
             return document.DocumentElement.OuterHtml;
+        }
+
+        private void CreatePage(List<Page> pagesList, DocumentNode node)
+        {
+            var lastPage = pagesList.LastOrDefault();
+            if (lastPage == null)
+            {
+                lastPage = new Page()
+                {
+                    Number = 1,
+                    Paragraphs = new List<DocumentNode>() { node }
+                };
+                pagesList.Add(lastPage);
+            }
+            else
+            {
+                var lastPageCount = lastPage.Paragraphs.Sum(p => p.Count());
+                var totalCharsCount = lastPageCount + node.Count();
+                if (totalCharsCount >= CHARS_PER_PAGE)
+                {
+                    var newPagesCount = (int)Math.Ceiling((double)node.CharsCount / CHARS_PER_PAGE);
+                    var nodeParagraphs = node.Children;
+                    var skippedParagraphs = 0;
+                    var lastAddedPageNumber = lastPage.Number;
+                    for (int i = 0; i < newPagesCount; i++)
+                    {
+                        var pageCharsCount = 0;
+                        var newPageParagraphs = nodeParagraphs.Skip(skippedParagraphs).TakeWhile(p =>
+                        {
+                            pageCharsCount += p.CharsCount;
+                            return pageCharsCount <= CHARS_PER_PAGE;
+                        }).ToList();
+                        skippedParagraphs += newPageParagraphs.Count;
+                        lastAddedPageNumber++;
+                        var newPage = new Page()
+                        {
+                            Paragraphs = newPageParagraphs,
+                            Number = lastAddedPageNumber
+                        };
+                        pagesList.Add(newPage);
+                    }
+                }
+                else
+                {
+                    lastPage.Paragraphs.Add(node);
+                }
+            }
         }
 
         private void CreateHtmlElement(IElement parrent, DocumentNode element, IDocument doc)
@@ -103,7 +170,7 @@ namespace BookReader.Core.Business
                     htmlNode.SetAttribute(attr.Key, attr.Value);
                 }
             }
-            
+
             if (element.NodeType == TextNodeType.Sentence)
             {
                 htmlNode.SetAttribute("class", "sentence-text");
@@ -112,7 +179,7 @@ namespace BookReader.Core.Business
                 if (!string.IsNullOrEmpty(sentenceId))
                 {
                     container.SetAttribute("data-sentence-id", sentenceId);
-                }               
+                }
                 container.SetAttribute("class", "sentence");
                 container.AppendChild(htmlNode);
 
@@ -134,14 +201,14 @@ namespace BookReader.Core.Business
                 container.AppendChild(newLine);
                 parrent.AppendChild(container);
             }
-            else 
+            else
             {
                 if (element.NodeType == TextNodeType.Word)
                 {
                     htmlNode.TextContent = $"{element.Value ?? string.Empty}";
                     parrent.Append(doc.CreateTextNode(" "));
-                }    
-                    
+                }
+
                 parrent.Append(htmlNode);
             }
             if (!element.Children.IsNullOrEmpty())
@@ -153,7 +220,7 @@ namespace BookReader.Core.Business
             }
         }
 
-        private Dictionary<TextNodeType, Func<IDocument,IElement>> CreateHtmlNodeByTypeSelector = new()
+        private Dictionary<TextNodeType, Func<IDocument, IElement>> CreateHtmlNodeByTypeSelector = new()
         {
             { TextNodeType.Paragraph, (doc) => doc.CreateElement("p") },
             { TextNodeType.Chapter, (doc) => doc.CreateElement("h1") },

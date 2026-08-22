@@ -50,12 +50,12 @@ namespace BookReader.Core.Services
                     details.FileName,
                     details.UserId, token);
                 if (savingResult.Status == BookStatus.Failed)
-                {
-                    var message = $"Can not upload file {details.FileName}. Issue with file storage";
+                {  
+                    var message = $"Can not upload raw file {details.FileName}. Issue with file storage";
                     _logger.LogError(message);
-                    return new ServiceResult<UploadBookResult>(
-                        new UploadBookResult(null, BookStatus.Failed),
-                        message);
+                }
+                else {
+                    await _eventPublisher.PublishAsync("book-notifications", new BookNotificationEvent(details.UserId, 0, BookStatus.SavedToStorage), token);
                 }
 
                 var newBook = new Book()
@@ -63,23 +63,21 @@ namespace BookReader.Core.Services
                     OriginalFileName = details.FileName,
                     CreatedAtUtc = DateTime.UtcNow,
                     FileSize = details.FileSize,
-                    Status = BookStatus.SavedToStorage,
+                    Status = BookStatus.CreatedMetadata,
                     UserId = details.UserId,
                     StoragePath = savingResult.Path,
                     Title = details.Title,
-                    Author = details.Author                    
+                    Author = details.Author
                 };
                 var metadataSavingResult = await _bookRepository.AddNewBook(newBook);
                 if (!metadataSavingResult)
                 {
                     var message = $"File was uploaded, but metadata wasn't saved to db. Filename: {details.FileName}";
                     _logger.LogError(message);
-                    await _storageService.DeleteBookFromStorage(details.UserId, details.FileName);
-                    return new ServiceResult<UploadBookResult>(
-                        new UploadBookResult(null, BookStatus.Failed),
-                        message);
+                    throw new Exception(message);
                 }
-                await _eventPublisher.PublishAsync(new BookUploadedEvent(newBook.Id), token);
+                await _eventPublisher.PublishAsync("book-processing", new BookProcessingEvent(details.UserId, newBook.Id), token);
+                await _eventPublisher.PublishAsync("book-notifications", new BookNotificationEvent(details.UserId, newBook.Id, newBook.Status), token);
 
                 return new ServiceResult<UploadBookResult>(
                     new UploadBookResult(newBook, newBook.Status),
@@ -87,8 +85,10 @@ namespace BookReader.Core.Services
             }
             catch (Exception e)
             {
+                await _storageService.DeleteBookFromStorage(details.UserId, details.FileName);
                 var message = $"Failed to upload book file. Exception: {e.Message}";
                 _logger.LogError(message);
+                await _eventPublisher.PublishAsync("book-notifications", new BookNotificationEvent(details.UserId, 0, BookStatus.Failed, e.Message), token);
                 return new ServiceResult<UploadBookResult>(new UploadBookResult(null, BookStatus.Failed), message);
             }
         }

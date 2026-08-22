@@ -1,26 +1,33 @@
 import { useEffect, useState } from "react";
-import { getAllUserBooks } from "../../api/Book";
+import { getAllUserBooks } from "../../api/ApiClient";
 import type { BookModel } from "../../api/models/book";
 import "./BooksPage.css"
 import AddBookModal from "./AddBookModal"
-import { useNavigate } from "react-router-dom";
+import { useOutletContext } from "react-router-dom";
+import BookCard from "./BookCard";
 
 export default function BooksPage() {
     const [books, setBooks] = useState<BookModel[]>([]);
     const [isAddBookModalOpen, setIsAddBookModalOpen] = useState(false);
-    const navigate = useNavigate();
+    const { bookStatuses } = useOutletContext<{
+        bookStatuses: Record<number, number>;
+    }>();
+    const loadBooks = async () => {
+        try {
+            const response = await getAllUserBooks();
+
+            if (response.success) {
+                setBooks(response.data);
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    };
 
     useEffect(() => {
-        getAllUserBooks()
-            .then(response => {
-                if (response.success) {
-                    setBooks(response.data);
-                }
-            })
-            .catch(error => {
-                console.error(error);
-            });
+        loadBooks();
     }, []);
+
     return (
         <div className="books-page">
             <div className="books-page-header">
@@ -37,35 +44,16 @@ export default function BooksPage() {
             <AddBookModal
                 isOpen={isAddBookModalOpen}
                 onClose={() => setIsAddBookModalOpen(false)}
+                onBookAdded={loadBooks}
             />
 
             <div className="books-grid">
                 {books.map(book => (
-                    <div
-                        className="book-card"
+                    <BookCard
                         key={book.id}
-                        onClick={() => navigate(`/books/${book.id}`)}
-                    >
-                        <div className="book-card-icon">
-                            📖
-                        </div>
-
-                        <div className="book-card-content">
-                            <h2>{book.originalFileName}</h2>
-
-                            <div className="book-card-info">
-                                <span>
-                                    {(book.fileSize / 1024 / 1024).toFixed(2)} MB
-                                </span>
-
-                                <span>{book.status}</span>
-                            </div>
-
-                            <div className="book-card-date">
-                                {new Date(book.createdAtUtc).toLocaleDateString()}
-                            </div>
-                        </div>
-                    </div>
+                        book={book}
+                        status={bookStatuses[book.id] ?? book.status}
+                    />
                 ))}
             </div>
         </div>

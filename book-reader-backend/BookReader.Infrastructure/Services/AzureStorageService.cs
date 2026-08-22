@@ -73,24 +73,33 @@ namespace BookReader.Infrastructure.Services
             CancellationToken token = default)
         {
             var virtualDirPath = Path.Combine(userId.ToString(), bookId.ToString());
-            
-            foreach (var (chapter, index) in data.Select((chapter, index) => (chapter, index)))
+            try
             {
-                var fileName = $"{index + 1}.json";
-                await using var stream = new MemoryStream();
 
-                await JsonSerializer.SerializeAsync(
-                    stream,
-                    chapter,
-                    new JsonSerializerOptions { WriteIndented = true },
-                    token);
-                stream.Position = 0;
-                var azureBlobFilePath = Path.Combine(virtualDirPath, fileName);
-                var blobClient = _parsedBooksContainer.GetBlobClient(azureBlobFilePath);
-                var res = await blobClient.UploadAsync(stream, overwrite: false, cancellationToken: token);
+
+                foreach (var (chapter, index) in data.Select((chapter, index) => (chapter, index)))
+                {
+                    var fileName = $"{index + 1}.json";
+                    await using var stream = new MemoryStream();
+
+                    await JsonSerializer.SerializeAsync(
+                        stream,
+                        chapter,
+                        new JsonSerializerOptions { WriteIndented = true },
+                        token);
+                    stream.Position = 0;
+                    var azureBlobFilePath = Path.Combine(virtualDirPath, fileName);
+                    var blobClient = _parsedBooksContainer.GetBlobClient(azureBlobFilePath);
+                    var res = await blobClient.UploadAsync(stream, overwrite: false, cancellationToken: token);
+                }
+                return new UploadFileResult(BookStatus.SavedToStorage, virtualDirPath);
+            }
+            catch (Exception)
+            {
+                throw;
             }
 
-            return new UploadFileResult(BookStatus.SavedToStorage, virtualDirPath);
+           
         }
     }
 }

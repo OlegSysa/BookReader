@@ -7,5 +7,6 @@ namespace BookReader.Core.Abstract.Repositories
     public interface IRepository
     {
         Task SaveChangesAsync();
+        //Task ExecuteInTransactionAsync(Func<CancellationToken, Task<bool>> func);
     }
 }

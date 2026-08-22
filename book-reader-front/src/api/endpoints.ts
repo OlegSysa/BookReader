@@ -1,12 +1,12 @@
 
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
-
+const NOTIFY_BASE = import.meta.env.VITE_NOTIFICATION_BASE_URL;
 export const ENDPOINTS = {
     books: `${API_BASE}/books`,
 
-    chapter: (bookId: number, selector: string) =>
-        `${API_BASE}/documentnode?bookId=${bookId}&selector=${selector}`,
+    chapter: (bookId: number, chapterIndex: number, pageNumber: number) =>
+        `${API_BASE}/documentnode?bookId=${bookId}&chapterIndex=${chapterIndex}&pageNumber=${pageNumber}`,
 
     translation: (value: string) =>
         `${API_BASE}/translation?value=${value}`,
@@ -24,4 +24,6 @@ export const ENDPOINTS = {
         `${API_BASE}/auth/google?mode=${mode}`,
     uploadBook: () =>
         `${API_BASE}/book/`,
+    connectNotifications: () =>
+        `${NOTIFY_BASE}/api/notifications/stream/`,
 };

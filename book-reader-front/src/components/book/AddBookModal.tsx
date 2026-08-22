@@ -1,15 +1,17 @@
 import { useState } from "react";
 import "./AddBookModal.css";
-import { uploadBook } from "../../api/Book";
+import { uploadBook } from "../../api/ApiClient";
 
 interface AddBookModalProps {
     isOpen: boolean;
     onClose: () => void;
+    onBookAdded: () => void;
 }
 
 export default function AddBookModal({
     isOpen,
-    onClose
+    onClose,
+    onBookAdded
 }: AddBookModalProps) {
     const [title, setTitle] = useState("");
     const [author, setAuthor] = useState("");
@@ -26,6 +28,7 @@ export default function AddBookModal({
         try {
             setIsLoading(true);
             await uploadBook(file, title, author);
+            onBookAdded();
             onClose();
         } catch {
             setError("Failed to upload book");

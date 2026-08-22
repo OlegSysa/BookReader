@@ -1,8 +1,4 @@
 ﻿using BookReader.Infrastructure.Persistence;
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace BookReader.Infrastructure.Repositories
 {
     public abstract class BaseRepository
@@ -17,5 +13,23 @@ namespace BookReader.Infrastructure.Repositories
         {
             return _context.SaveChangesAsync();
         }
+
+        //public  Task<bool> ExecuteInTransactionAsync(CancellationToken token, Func<CancellationToken, Task<bool>> func)
+        //{
+        //     using var transaction = _context.Database.BeginTransactionAsync();
+
+        //    try
+        //    {
+        //        var res = func(token);
+        //        transaction.CommitAsync();
+        //        return res;
+        //    }
+        //    catch
+        //    {
+        //        await transaction.RollbackAsync();
+        //        throw;
+        //    }
+           
+        //}
     }
 }

@@ -4,16 +4,17 @@ using BookReader.Core.Events;
 
 namespace BookReader.Infrastructure.Services.Messaging.Handlers
 {
-    public class BookUploadedEventHandler : IEventHandler<BookUploadedEvent>
+    [Obsolete]
+    public class BookUploadedEventHandler : IEventHandler<BookProcessingEvent>
     {
         private readonly IBookParserService _bookParserService;
         public BookUploadedEventHandler(IBookParserService bookParserService)
         {
             _bookParserService = bookParserService;
         }
-        public Task HandleAsync(BookUploadedEvent e, CancellationToken token)
+        public Task HandleAsync(BookProcessingEvent e, CancellationToken token)
         {
-            return _bookParserService.ParseBook(e.BookId, token);
+            return _bookParserService.ParseBook(e.UserId, e.BookId, token);
         }
     }
 }
