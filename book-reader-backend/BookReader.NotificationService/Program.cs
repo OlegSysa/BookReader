@@ -71,7 +71,7 @@ namespace BookReader.NotificationService
             {
                 builder.Services.AddMassTransit(x =>
                 {
-                    //x.AddConsumer<BookNotificationConsumer, BookNotificationConsumerDefinition>();
+                    x.AddConsumer<BookNotificationConsumer>();
 
                     if (builder.Configuration.GetValue<bool>("Messaging:ServiceBusEnabled"))
                     {

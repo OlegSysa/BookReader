@@ -38,7 +38,7 @@ namespace BookReader.BookProcessor
             {
                 builder.Services.AddMassTransit(x =>
                 {
-                   // x.AddConsumer<UploadBookConsumer, UploadBookConsumerDefinition>();
+                   x.AddConsumer<UploadBookConsumer>();
 
                     if (builder.Configuration.GetValue<bool>("Messaging:ServiceBusEnabled"))
                     {
