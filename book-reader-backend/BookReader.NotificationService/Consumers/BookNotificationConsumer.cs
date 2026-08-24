@@ -16,7 +16,11 @@ namespace BookReader.NotificationService.Consumers
         {
             _notificationManager = notificationManager;
         }
-        public async Task Consume(ConsumeContext<BookNotificationEvent> context) =>
+        public async Task Consume(ConsumeContext<BookNotificationEvent> context)
+        {
+            Console.WriteLine($"Notification received for user {context.Message.UserId}");
             await _notificationManager.SendAsync(context.Message.UserId, context.Message);
+        }
+
     }
 }
