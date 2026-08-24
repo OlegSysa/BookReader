@@ -71,7 +71,7 @@ namespace BookReader.NotificationService
             {
                 builder.Services.AddMassTransit(x =>
                 {
-                    x.AddConsumer<BookNotificationConsumer, BookNotificationConsumerDefinition>();
+                    //x.AddConsumer<BookNotificationConsumer, BookNotificationConsumerDefinition>();
 
                     if (builder.Configuration.GetValue<bool>("Messaging:ServiceBusEnabled"))
                     {
@@ -79,11 +79,11 @@ namespace BookReader.NotificationService
                         {
                             cfg.Host(builder.Configuration["ServiceBus:ConnectionString"]);
                             cfg.ConfigureEndpoints(context);
-                            //cfg.ReceiveEndpoint("book-notifications", e =>
-                            //{
-                            //    e.ConfigureConsumeTopology = false;
-                            //    e.ConfigureConsumer<BookNotificationConsumer>(context);
-                            //});
+                            cfg.ReceiveEndpoint("book-notifications", e =>
+                            {
+                                e.ConfigureConsumeTopology = false;
+                                e.ConfigureConsumer<BookNotificationConsumer>(context);
+                            });
                         });
                     }
                     else

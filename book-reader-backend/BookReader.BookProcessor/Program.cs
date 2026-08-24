@@ -38,7 +38,7 @@ namespace BookReader.BookProcessor
             {
                 builder.Services.AddMassTransit(x =>
                 {
-                    x.AddConsumer<UploadBookConsumer, UploadBookConsumerDefinition>();
+                   // x.AddConsumer<UploadBookConsumer, UploadBookConsumerDefinition>();
 
                     if (builder.Configuration.GetValue<bool>("Messaging:ServiceBusEnabled"))
                     {
@@ -46,11 +46,11 @@ namespace BookReader.BookProcessor
                         {
                             cfg.Host(builder.Configuration["ServiceBus:ConnectionString"]);
 
-                            //cfg.ReceiveEndpoint("book-processing", e =>
-                            //{
-                            //    e.ConfigureConsumeTopology = false;
-                            //    e.ConfigureConsumer<UploadBookConsumer>(context);
-                            //});
+                            cfg.ReceiveEndpoint("book-processing", e =>
+                            {
+                                e.ConfigureConsumeTopology = false;
+                                e.ConfigureConsumer<UploadBookConsumer>(context);
+                            });
                         });
                     }
                     else
