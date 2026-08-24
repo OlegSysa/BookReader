@@ -105,7 +105,7 @@ namespace BookReader.NotificationService
             app.UseCors("front");
             app.UseAuthorization();
             app.MapGet("/health", () => Results.Ok("BookNotificationsService is running"));
-            app.MapGet("/api/notifications/stream", async (HttpContext context, INotificationManager connectionManager) =>
+            app.MapGet("/api/notifications/stream", async (HttpContext context, INotificationManager connectionManager,  ILogger<Program> logger) =>
             {
                 var userIdClaim = context.User.FindFirst(ClaimTypes.NameIdentifier);
 
@@ -131,6 +131,10 @@ namespace BookReader.NotificationService
                 }
                 finally
                 {
+                    logger.LogInformation(
+       "SSE disconnected. UserId: {UserId}, Aborted: {Aborted}",
+       userId,
+       context.RequestAborted.IsCancellationRequested);
                     connectionManager.Remove(userId, context.Response);
                 }
 
