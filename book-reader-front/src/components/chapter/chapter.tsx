@@ -38,7 +38,7 @@ export default function Chapter({ bookId }: ChapterProps) {
             );
 
             setContent(result.data.content);
-            setHasNextPage(!result.data.isLastPage);
+            setHasNextPage(!result.data.isLastChapter);
 
         }
         finally {
