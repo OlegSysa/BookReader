@@ -55,5 +55,16 @@ namespace BookReader.API.Controllers
                 StatusCodes.Status400BadRequest;
             return GenerateResponse(statusCode, res);
         }
+
+        [HttpDelete]
+        public async Task<IActionResult> Delete(int bookId, CancellationToken token)
+        {
+            int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId);
+            var res = await _bookService.DeleteAsync(userId, bookId, token);
+            var statusCode = res.IsSuccess ?
+                StatusCodes.Status202Accepted :
+                StatusCodes.Status400BadRequest;
+            return GenerateResponse(statusCode, res);
+        }
     }
 }

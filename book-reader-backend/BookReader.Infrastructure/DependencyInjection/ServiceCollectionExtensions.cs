@@ -31,6 +31,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ITranslationRespository, TranslationRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IRoleRepository, RoleRepository>();
+        services.AddScoped<IOutboxMessageRepository, OutboxMessageRepository>();
         services.AddScoped<IBookService, BookService>();
         services.AddScoped<IStorageService, AzureStorageService>();
         services.AddScoped<IDocumentNodeService, DocumentNodeService>();

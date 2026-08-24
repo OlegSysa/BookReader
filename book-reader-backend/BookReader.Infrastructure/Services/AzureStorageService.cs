@@ -1,4 +1,5 @@
 ﻿using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using BookReader.Core.Abstract.Services;
 using BookReader.Core.DTOs.Models;
 using BookReader.Core.Enums;
@@ -30,16 +31,25 @@ namespace BookReader.Infrastructure.Services
         {
             var virtualFilePath = $"{userId}/{fileName}";
             var blobClient = _booksContainer.GetBlobClient(virtualFilePath);
-            var res = await blobClient.DeleteIfExistsAsync();
-            return res.Value;
+            await blobClient.DeleteIfExistsAsync();
+            return true;
         }
 
-        public async Task<bool> DeleteParsedBookFromStorage(int userId, int bookId)
+        public async Task<bool> DeleteParsedBookFromStorage(int userId, int bookId, CancellationToken token)
         {
             var virtualFilePath = $"{userId}/{bookId}";
-            var blobClient = _booksContainer.GetBlobClient(virtualFilePath);
-            var res = await blobClient.DeleteIfExistsAsync();
-            return res.Value;
+            var prefix = $"{userId}/{bookId}/";
+            var chaptersBlobs = _parsedBooksContainer.GetBlobsAsync(
+                traits: BlobTraits.None,
+                states: BlobStates.None,
+                prefix: virtualFilePath,
+                cancellationToken: token);
+            await foreach (var blob in chaptersBlobs)
+            {
+                await _parsedBooksContainer.DeleteBlobIfExistsAsync(blob.Name);
+            }
+
+            return true;
         }
 
         public async Task<Stream> GetBookAsync(string path, CancellationToken cancellationToken = default)

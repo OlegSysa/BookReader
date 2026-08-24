@@ -53,6 +53,7 @@ export default function BooksPage() {
                         key={book.id}
                         book={book}
                         status={bookStatuses[book.id] ?? book.status}
+                        onBooksChanged={loadBooks}
                     />
                 ))}
             </div>

@@ -1,4 +1,7 @@
+using BookReader.BookProcessor.Abstract;
 using BookReader.BookProcessor.Consumers;
+using BookReader.BookProcessor.Services;
+using BookReader.BookProcessor.Services.Handlers;
 using BookReader.Core.Abstract.Events;
 using BookReader.Core.Abstract.Repositories;
 using BookReader.Core.Abstract.Services;
@@ -24,10 +27,13 @@ namespace BookReader.BookProcessor
             options.UseNpgsql(connectionString));
             builder.Services.AddScoped<IStorageService, AzureStorageService>();
             builder.Services.AddScoped<IBookRepository, BookRepository>();
+            builder.Services.AddScoped<IOutboxMessageRepository, OutboxMessageRepository>();
             builder.Services.AddScoped<IEventPublisher, MassTransitEventPublisher>();
             builder.Services.AddScoped<IBookParserService, BookParserService>();
             builder.Services.AddScoped<IParser, EpubToJsonParser>();
+            builder.Services.AddScoped<IOutboxMessageHandler, BookDeletedHandler>();
             builder.Services.Configure<AzureStorageOptions>(builder.Configuration.GetSection("AzureStorage"));
+            builder.Services.AddHostedService<OutboxMessageProcessor>();
             if (builder.Configuration.GetValue<bool>("Messaging:Enabled"))
             {
                 builder.Services.AddMassTransit(x =>

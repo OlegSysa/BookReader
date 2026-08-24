@@ -2,14 +2,30 @@ import { useNavigate } from "react-router-dom";
 import type { BookModel } from "../../api/models/book";
 import BookStatus from "./BookStatus";
 import "./BookCard.css"
+import deleteIcon from "../../assets/delete_book.png"
+import { deleteBook } from "../../api/ApiClient";
 
 interface BookCardProps {
     book: BookModel;
     status: number;
+    onBooksChanged: () => void;
 }
 
-export default function BookCard({ book, status }: BookCardProps) {
+export default function BookCard({ book, status, onBooksChanged }: BookCardProps) {
     const navigate = useNavigate();
+
+    const delete_Book = async (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.stopPropagation();
+        try {
+            const response = await deleteBook(book.id);
+
+            if (response.success) {
+                onBooksChanged();
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    };
 
     return (
         <div
@@ -34,6 +50,11 @@ export default function BookCard({ book, status }: BookCardProps) {
                     </span>
 
                     <BookStatus status={status} />
+                    <span>
+                        <button onClick={delete_Book} className="delete-book-button">
+                            <img src={deleteIcon} alt="Delete" />
+                        </button>
+                    </span>
                 </div>
 
                 <div className="book-card-date">

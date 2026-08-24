@@ -75,7 +75,7 @@ namespace BookReader.Infrastructure.Services
         public Task<Stream> GetParsedBookAsync(string path, CancellationToken cancellationToken = default) =>
             throw new NotImplementedException();
 
-        public async Task<bool> DeleteParsedBookFromStorage(int userId, int bookId)
+        public async Task<bool> DeleteParsedBookFromStorage(int userId, int bookId, CancellationToken token)
         {
             var storagePath = _config["Storage:ParsedBooksPath"] ?? string.Empty;
             if (string.IsNullOrEmpty(storagePath) || !Directory.Exists(storagePath))

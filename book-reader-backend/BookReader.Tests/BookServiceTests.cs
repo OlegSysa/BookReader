@@ -16,6 +16,7 @@ public class BookServiceTests
     private Mock<IStorageService> _storage = null!;
     private Mock<ILogger<BookService>> _logger = null!;
     private Mock<IEventPublisher> _publisher = null!;
+    private Mock<IOutboxMessageRepository> _outboxMessageRepo = null!;
 
     private BookService _service = null!;
 
@@ -26,12 +27,14 @@ public class BookServiceTests
         _storage = new Mock<IStorageService>();
         _logger = new Mock<ILogger<BookService>>();
         _publisher = new Mock<IEventPublisher>();
+        _outboxMessageRepo = new Mock<IOutboxMessageRepository>();
         var configuration = new ConfigurationBuilder().Build();
         _service = new BookService(
             _repository.Object,
             _storage.Object,
             _publisher.Object,
             configuration,
+            _outboxMessageRepo.Object,
             _logger.Object);
     }
 

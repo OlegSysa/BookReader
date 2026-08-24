@@ -13,7 +13,7 @@ namespace BookReader.Infrastructure.Repositories
         public BookRepository(AppDbContext context) : base (context)
         {  
         }
-        public async Task<bool> AddNewBook(Book book)
+        public async Task<bool> AddNewBookAsync(Book book)
         {
             _context.Books.Add(book);
             var res = await _context.SaveChangesAsync();
@@ -21,12 +21,25 @@ namespace BookReader.Infrastructure.Repositories
         }
 
         public async Task<IReadOnlyCollection<Book>> GetByUserIdAsync(int userId, CancellationToken token) => 
-            await _context.Books.Where(b => b.UserId == userId).ToListAsync(token);
+            await _context.Books.Where(b => b.UserId == userId && !b.Deleted).ToListAsync(token);
 
         public async Task<Book?> GetByUserAndFileNameAsync(int userId, string fileName, CancellationToken token) =>
-            await _context.Books.FirstOrDefaultAsync(b => b.UserId == userId && b.OriginalFileName == fileName, token);
+            await _context.Books.FirstOrDefaultAsync(b =>!b.Deleted && b.UserId == userId && b.OriginalFileName == fileName, token);
 
         public Task<Book?> GetByIdAsync(int bookId, CancellationToken token) => 
-            _context.Books.FirstOrDefaultAsync(b => b.Id == bookId, token);
+            _context.Books.FirstOrDefaultAsync(b =>!b.Deleted && b.Id == bookId, token);
+
+        public async Task<bool> DeleteBookAsync(int bookId)
+        {
+            var entity = await _context.Books.FindAsync(bookId);
+            if (entity == null)
+                return false;
+           
+            _context.Books.Remove(entity);
+            await _context.SaveChangesAsync(); 
+            return true;
+        }
+
+       
     }
 }

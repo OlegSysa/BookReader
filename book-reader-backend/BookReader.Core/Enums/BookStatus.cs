@@ -12,6 +12,7 @@ namespace BookReader.Core.Enums
         Parsed = 3,
         Ready = 4,
         Failed = 5,
+        Deleted = 6
        
     }
 }

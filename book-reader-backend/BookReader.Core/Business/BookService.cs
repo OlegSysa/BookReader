@@ -11,6 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Net.NetworkInformation;
 using System.Net.WebSockets;
+using System.Text.Json;
 
 namespace BookReader.Core.Services
 {
@@ -19,15 +20,18 @@ namespace BookReader.Core.Services
         private readonly IBookRepository _bookRepository;
         private readonly IStorageService _storageService;
         private readonly IEventPublisher _eventPublisher;
+        private readonly IOutboxMessageRepository _outboxMessageRepository;
         public BookService(IBookRepository bookRepository,
             IStorageService storageService,
             IEventPublisher eventPublisher,
             IConfiguration config,
+            IOutboxMessageRepository outboxMessageRepository,
             ILogger<BookService> logger) : base(config, logger)
         {
             _bookRepository = bookRepository;
             _storageService = storageService;
             _eventPublisher = eventPublisher;
+            _outboxMessageRepository = outboxMessageRepository;
         }
         public async Task<ServiceResult<UploadBookResult>> UploadAsync(Stream stream,
             UploadBookDetails details,
@@ -41,7 +45,7 @@ namespace BookReader.Core.Services
                     var message = $"Can not upload file. Invalid file details {details.FileName}";
                     _logger.LogError(message);
                     return new ServiceResult<UploadBookResult>(
-                        new UploadBookResult(null, BookStatus.Failed), 
+                        new UploadBookResult(null, BookStatus.Failed),
                         message);
                 }
                 var storageRootPath = _config["Storage:BooksPath"] ?? string.Empty;
@@ -50,11 +54,12 @@ namespace BookReader.Core.Services
                     details.FileName,
                     details.UserId, token);
                 if (savingResult.Status == BookStatus.Failed)
-                {  
+                {
                     var message = $"Can not upload raw file {details.FileName}. Issue with file storage";
                     _logger.LogError(message);
                 }
-                else {
+                else
+                {
                     await _eventPublisher.PublishAsync("book-notifications", new BookNotificationEvent(details.UserId, 0, BookStatus.SavedToStorage), token);
                 }
 
@@ -69,7 +74,7 @@ namespace BookReader.Core.Services
                     Title = details.Title,
                     Author = details.Author
                 };
-                var metadataSavingResult = await _bookRepository.AddNewBook(newBook);
+                var metadataSavingResult = await _bookRepository.AddNewBookAsync(newBook);
                 if (!metadataSavingResult)
                 {
                     var message = $"File was uploaded, but metadata wasn't saved to db. Filename: {details.FileName}";
@@ -106,7 +111,7 @@ namespace BookReader.Core.Services
                 return new ServiceResult<IEnumerable<BookModel>>(new List<BookModel>(),
                     $"Failed to get books for user {userId}. Exception: {e.Message}");
             }
-        
+
         }
         public async Task<ServiceResult<Book?>> GetBookByUserAndFileNameAsync(int userId,
             string fileName,
@@ -123,7 +128,38 @@ namespace BookReader.Core.Services
                     $"Failed to get books for user {userId}. Exception: {e.Message}");
             }
         }
-             
+
+        public async Task<ServiceResult<bool>> DeleteAsync(int userId, int bookId, CancellationToken token)
+        {
+            try
+            {
+                var book = await _bookRepository.GetByIdAsync(bookId, token);
+                if (book == null)
+                    return new ServiceResult<bool>(false, $"Cannot find book Id:{bookId}");
+
+                book.Deleted = true;
+                var payload = new BookDeletedPayload(userId, bookId, book.OriginalFileName);
+
+                var outboxMessage = new OutboxMessage()
+                {
+                    CreatedAtUtc = DateTime.UtcNow,
+                    Payload = JsonSerializer.Serialize(payload),
+                    EventType = OutboxMessageType.BookDeleted
+                };
+
+                await _outboxMessageRepository.AddAsync(outboxMessage, false);
+                await _bookRepository.SaveChangesAsync();
+
+                return new ServiceResult<bool>(true, null);
+            }
+            catch (Exception ex)
+            {
+                var message = $"Cannot delete book. Id: {bookId}";
+                _logger.LogError(ex, message);
+                return new ServiceResult<bool>(false, message);
+            }
+        }
+
 
         private async Task<bool> ValidateUploadBookModel(UploadBookDetails details, CancellationToken token)
         {
@@ -143,5 +179,7 @@ namespace BookReader.Core.Services
 
             return true;
         }
+
+
     }
 }

@@ -10,5 +10,7 @@ namespace BookReader.Core.Abstract.Services
         Task<ServiceResult<UploadBookResult>> UploadAsync(Stream stream,
             UploadBookDetails details,
             CancellationToken token);
+        Task<ServiceResult<bool>> DeleteAsync(int userId, int bookId,
+            CancellationToken token);
     }
 }

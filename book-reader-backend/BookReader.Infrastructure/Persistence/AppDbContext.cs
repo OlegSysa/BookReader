@@ -19,6 +19,7 @@ namespace BookReader.Infrastructure.Persistence
         public DbSet<Translation> Translations => Set<Translation>();
         public DbSet<User> Users => Set<User>();
         public DbSet<Role> Roles => Set<Role>();
+        public DbSet<OutboxMessage> OutboxMessages { get; set; }
 
     }
 }

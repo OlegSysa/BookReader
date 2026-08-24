@@ -18,5 +18,6 @@ namespace BookReader.Core.Entities
         public int ChaptersCount { get; set; }
         public required BookStatus Status { get; set; }
         public DateTime CreatedAtUtc { get; set; }
+        public bool Deleted { get; set; }
     }
 }

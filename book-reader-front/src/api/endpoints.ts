@@ -1,5 +1,3 @@
-
-
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 const NOTIFY_BASE = import.meta.env.VITE_NOTIFICATION_BASE_URL;
 export const ENDPOINTS = {
@@ -26,4 +24,6 @@ export const ENDPOINTS = {
         `${API_BASE}/book/`,
     connectNotifications: () =>
         `${NOTIFY_BASE}/api/notifications/stream/`,
+    deleteBook: (id: number) =>
+        `${API_BASE}/book?bookId=${id}`,
 };

@@ -75,6 +75,19 @@ export async function getAllUserBooks(): Promise<ApiResponse<BookModel[]>> {
     return await response.json();
 }
 
+export async function deleteBook(bookId: number): Promise<ApiResponse<boolean>> {
+    const response = await apiFetch(
+        ENDPOINTS.deleteBook(bookId), {
+        method: "DELETE"
+    });
+
+    if (!response.ok) {
+        throw new Error("Failed to delete book");
+    }
+
+    return await response.json();
+}
+
 export async function uploadBook(file: File, title: string, author: string) {
     const formData = new FormData();
     formData.append("File", file);
