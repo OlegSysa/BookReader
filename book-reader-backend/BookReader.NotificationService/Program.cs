@@ -78,7 +78,7 @@ namespace BookReader.NotificationService
                         x.UsingAzureServiceBus((context, cfg) =>
                         {
                             cfg.Host(builder.Configuration["ServiceBus:ConnectionString"]);
-                            cfg.ConfigureEndpoints(context);
+                            //cfg.ConfigureEndpoints(context);
                             cfg.ReceiveEndpoint("book-notifications", e =>
                             {
                                 e.ConfigureConsumeTopology = false;
