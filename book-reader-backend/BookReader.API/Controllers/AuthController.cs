@@ -16,10 +16,14 @@ namespace BookReader.API.Controllers
     {
         private readonly IAuthService _authService;
         private readonly IConfiguration _config;
-        public AuthController(IConfiguration config, IAuthService authService)
+        private readonly IWebHostEnvironment _environment;
+        public AuthController(IWebHostEnvironment environment,
+            IConfiguration config,
+            IAuthService authService)
         {
             _authService = authService;
             _config = config;
+            _environment = environment;
         }
 
 
@@ -29,7 +33,7 @@ namespace BookReader.API.Controllers
             var tokenResult = await _authService.RegisterAsync(request.Email, request.Password, token);
             if (tokenResult.IsSuccess)
             {
-                Response.SetTokenCookie(tokenResult.Data!);
+                Response.SetTokenCookie(_environment, tokenResult.Data!);
                 tokenResult.Data = "success";
             }
 
@@ -45,7 +49,7 @@ namespace BookReader.API.Controllers
             var tokenResult = await _authService.LoginAsync(request.Email, request.Password, token);
             if (tokenResult.IsSuccess)
             {
-                Response.SetTokenCookie(tokenResult.Data!);
+                Response.SetTokenCookie(_environment, tokenResult.Data!);
                 tokenResult.Data = "success";
             }
             var statusCode = tokenResult.IsSuccess ? 
@@ -94,7 +98,7 @@ namespace BookReader.API.Controllers
             var res = await _authService.LoginExternalAsync(email, externalId, token);
             if (res.IsSuccess)
             {
-                Response.SetTokenCookie(res.Data!);
+                Response.SetTokenCookie(_environment, res.Data!);
             }
             var appUrl = _config["App:BaseUrl"];
             return Redirect($"{appUrl}/dashboard");
@@ -117,7 +121,7 @@ namespace BookReader.API.Controllers
             var res = await _authService.RegisterExternalAsync(email, externalId, token);
             if (res.IsSuccess)
             {
-                Response.SetTokenCookie(res.Data!);
+                Response.SetTokenCookie(_environment, res.Data!);
             }
             var appUrl = _config["App:BaseUrl"];
             return Redirect($"{appUrl}/dashboard");
