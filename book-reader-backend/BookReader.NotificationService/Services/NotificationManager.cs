@@ -56,6 +56,10 @@ namespace BookReader.NotificationService.Services
             var json = JsonSerializer.Serialize(message);
             foreach (var connection in connections)
             {
+
+                Console.WriteLine($"HasStarted: {connection.HasStarted}");
+                Console.WriteLine($"Completed: {connection.HttpContext.RequestAborted.IsCancellationRequested}");
+
                 await connection.WriteAsync($"data: {json}\n\n");
                 await connection.Body.FlushAsync();
             }
