@@ -1,5 +1,6 @@
 import { ENDPOINTS } from "./endpoints";
 import type { BookModel } from "./models/book";
+import type { Chapter } from "./models/chapter";
 import type { ApiResponse } from "./models/http";
 
 async function apiFetch(
@@ -23,7 +24,7 @@ export async function getChapter(
     bookId: number,
     chapterIndex: number,
     pageNumber: number
-): Promise<ApiResponse<string>> {
+): Promise<ApiResponse<Chapter>> {
     const response = await apiFetch(
         ENDPOINTS.chapter(bookId, chapterIndex, pageNumber)
     );

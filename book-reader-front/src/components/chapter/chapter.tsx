@@ -28,7 +28,9 @@ export default function Chapter({ bookId }: ChapterProps) {
     const loadPage = async (pageNumber: number) => {
         try {
             setLoading(true);
-
+            if (!hasNextPage) {
+                setChapterIndex(chapterIndex + 1);
+            }
             const result = await getChapter(
                 bookId,
                 chapterIndex,
@@ -37,6 +39,7 @@ export default function Chapter({ bookId }: ChapterProps) {
 
             setContent(result.data.content);
             setHasNextPage(!result.data.isLastPage);
+
         }
         finally {
             setLoading(false);
