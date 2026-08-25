@@ -1,4 +1,4 @@
-using AngleSharp;
+using Azure.Identity;
 using BookReader.Infrastructure.DependencyInjection;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -16,6 +16,15 @@ namespace BookReader.API
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            if (!builder.Environment.IsDevelopment())
+            {
+                var keyVaultUrl = new Uri(
+                    builder.Configuration["KeyVault:Url"]!);
+
+                builder.Configuration.AddAzureKeyVault(
+                    keyVaultUrl,
+                    new DefaultAzureCredential());
+            }
             builder.Host.UseSerilog();
             Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(builder.Configuration).CreateLogger();
             
