@@ -96,7 +96,11 @@ namespace BookReader.NotificationService
                                 h.Password("guest");
                             });
 
-                            cfg.ConfigureEndpoints(context);
+                            cfg.ReceiveEndpoint("book-notifications", e =>
+                            {
+                                e.ConfigureConsumeTopology = false;
+                                e.ConfigureConsumer<BookNotificationConsumer>(context);
+                            });
                         });
                     }
                 });

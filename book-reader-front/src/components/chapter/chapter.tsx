@@ -17,6 +17,7 @@ export default function Chapter({ bookId }: ChapterProps) {
     const [page, setPage] = useState(1);
     const [chapterIndex, setChapterIndex] = useState(2);
     const [hasNextPage, setHasNextPage] = useState(true);
+    const [hasNextChapter, setHasNextChapter] = useState(true);
     const [loading, setLoading] = useState(false);
 
     const [popup, setPopup] = useState<{
@@ -28,6 +29,7 @@ export default function Chapter({ bookId }: ChapterProps) {
     const loadPage = async (pageNumber: number) => {
         try {
             setLoading(true);
+            debugger;
             if (!hasNextPage) {
                 setChapterIndex(chapterIndex + 1);
             }
@@ -36,9 +38,9 @@ export default function Chapter({ bookId }: ChapterProps) {
                 chapterIndex,
                 pageNumber
             );
-
+            setHasNextChapter(!result.data.isLastChapter);
             setContent(result.data.content);
-            setHasNextPage(!result.data.isLastChapter);
+            setHasNextPage(!result.data.isLastPage);
 
         }
         finally {
@@ -118,7 +120,7 @@ export default function Chapter({ bookId }: ChapterProps) {
     };
 
     if (!content) {
-        return <div>Loading...</div>;
+        return <div>Loading...</div>
     }
 
     return (
@@ -150,7 +152,7 @@ export default function Chapter({ bookId }: ChapterProps) {
                     </span>
 
                     <button
-                        disabled={!hasNextPage || loading}
+                        disabled={(!hasNextPage && !hasNextChapter) || loading}
                         onClick={() => setPage((p) => p + 1)}
                         aria-label="Next page"
                     >
