@@ -85,3 +85,5 @@ Thumbs.db
 **/Properties/PublishProfiles/*.pubxml
 **/Properties/PublishProfiles/*.pubxml.user
 
+appsettings.Development.json
+
