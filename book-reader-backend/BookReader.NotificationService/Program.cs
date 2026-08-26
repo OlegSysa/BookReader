@@ -1,3 +1,4 @@
+using Azure.Identity;
 using BookReader.Infrastructure.Persistence;
 using BookReader.NotificationService.Abstract;
 using BookReader.NotificationService.Consumers;
@@ -18,7 +19,15 @@ namespace BookReader.NotificationService
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            if (!builder.Environment.IsDevelopment())
+            {
+                var keyVaultUrl = new Uri(
+                    builder.Configuration["KeyVault:Url"]!);
 
+                builder.Configuration.AddAzureKeyVault(
+                    keyVaultUrl,
+                    new DefaultAzureCredential());
+            }
             builder.Services.AddSingleton<INotificationManager, NotificationManager>();
             builder.Services.AddAuthentication(options =>
             {

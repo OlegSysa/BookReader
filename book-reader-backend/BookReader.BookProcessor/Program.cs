@@ -1,3 +1,4 @@
+using Azure.Identity;
 using BookReader.BookProcessor.Abstract;
 using BookReader.BookProcessor.Consumers;
 using BookReader.BookProcessor.Services;
@@ -22,6 +23,15 @@ namespace BookReader.BookProcessor
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            if (!builder.Environment.IsDevelopment())
+            {
+                var keyVaultUrl = new Uri(
+                    builder.Configuration["KeyVault:Url"]!);
+
+                builder.Configuration.AddAzureKeyVault(
+                    keyVaultUrl,
+                    new DefaultAzureCredential());
+            }
             var connectionString = builder.Configuration.GetConnectionString("DatabaseConnection");
             builder.Services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(connectionString));
