@@ -8,11 +8,24 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+  permissions:
+    id-token: write
+    contents: read
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: 4558f082-7ac7-46ad-ba62-f620da64ccdb
+          tenant-id: e1e367e9-f518-414f-87c4-3cee0521971e
+          subscription-id: f5b310d8-aca8-43c7-9847-4fb34fc9c611
+      - name: Load configuration from Key Vault
+        run: |
+          echo "Messaging__Enabled=$(az keyvault secret show --vault-name book-reader-vault --name Messaging--Enabled --query value -o tsv)" >> $GITHUB_ENV
+          echo "Messaging__ServiceBusEnabled=$(az keyvault secret show --vault-name book-reader-vault --name Messaging--ServiceBusEnabled --query value -o tsv)" >> $GITHUB_ENV
+          echo "ServiceBus__ConnectionString=$(az keyvault secret show --vault-name book-reader-vault --name ServiceBus--ConnectionString --query value -o tsv)" >> $GITHUB_ENV
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
