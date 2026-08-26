@@ -134,10 +134,22 @@ namespace BookReader.NotificationService
                 try
                 {
                     await context.Response.Body.FlushAsync();
+                    while (!context.RequestAborted.IsCancellationRequested)
+                    {
+                        await Task.Delay(
+                            TimeSpan.FromSeconds(20),
+                            context.RequestAborted);
 
-                    await Task.Delay(
-                        Timeout.Infinite,
-                        context.RequestAborted);
+                        await context.Response.WriteAsync(
+                            ": heartbeat\n\n",
+                            context.RequestAborted);
+
+                        await context.Response.Body.FlushAsync(
+                            context.RequestAborted);
+                    }
+                    //await Task.Delay(
+                    //    Timeout.Infinite,
+                    //    context.RequestAborted);
                 }
                 catch (OperationCanceledException)
                 {
