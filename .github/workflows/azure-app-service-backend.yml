@@ -18,7 +18,7 @@ jobs:
       - name: Azure Login
         uses: azure/login@v2
         with:
-          client-id: 4558f082-7ac7-46ad-ba62-f620da64ccdb
+          client-id: e76c2eb9-4121-475b-af44-83367c9a0f4f
           tenant-id: e1e367e9-f518-414f-87c4-3cee0521971e
           subscription-id: f5b310d8-aca8-43c7-9847-4fb34fc9c611
       - name: Load configuration from Key Vault
