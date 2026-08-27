@@ -15,6 +15,7 @@ using BookReader.Infrastructure.Services;
 using BookReader.Infrastructure.Services.Messaging;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 namespace BookReader.BookProcessor
 {
@@ -31,6 +32,25 @@ namespace BookReader.BookProcessor
                 builder.Configuration.AddAzureKeyVault(
                     keyVaultUrl,
                     new DefaultAzureCredential());
+            }
+            builder.Host.UseSerilog();
+            if (!builder.Environment.IsDevelopment())
+            {
+                var serilogConnectionString =
+                    builder.Configuration["ApplicationInsights:ConnectionString"];
+
+                Log.Logger = new LoggerConfiguration()
+                    .ReadFrom.Configuration(builder.Configuration)
+                    .WriteTo.ApplicationInsights(
+                        serilogConnectionString,
+                        TelemetryConverter.Traces)
+                    .CreateLogger();
+            }
+            else
+            {
+                Log.Logger = new LoggerConfiguration()
+                    .ReadFrom.Configuration(builder.Configuration)
+                    .CreateLogger();
             }
             var connectionString = builder.Configuration.GetConnectionString("DatabaseConnection");
             builder.Services.AddDbContext<AppDbContext>(options =>

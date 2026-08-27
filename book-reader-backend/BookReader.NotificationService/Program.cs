@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Serilog;
 using System.Security.Claims;
 using System.Text;
 
@@ -27,6 +28,25 @@ namespace BookReader.NotificationService
                 builder.Configuration.AddAzureKeyVault(
                     keyVaultUrl,
                     new DefaultAzureCredential());
+            }
+            builder.Host.UseSerilog();
+            if (!builder.Environment.IsDevelopment())
+            {
+                var connectionString =
+                    builder.Configuration["ApplicationInsights:ConnectionString"];
+
+                Log.Logger = new LoggerConfiguration()
+                    .ReadFrom.Configuration(builder.Configuration)
+                    .WriteTo.ApplicationInsights(
+                        connectionString,
+                        TelemetryConverter.Traces)
+                    .CreateLogger();
+            }
+            else
+            {
+                Log.Logger = new LoggerConfiguration()
+                    .ReadFrom.Configuration(builder.Configuration)
+                    .CreateLogger();
             }
             builder.Services.AddSingleton<INotificationManager, NotificationManager>();
             builder.Services.AddAuthentication(options =>
@@ -118,7 +138,9 @@ namespace BookReader.NotificationService
             app.UseCors("front");
             app.UseAuthorization();
             app.MapGet("/health", () => Results.Ok("BookNotificationsService is running"));
-            app.MapGet("/api/notifications/stream", async (HttpContext context, INotificationManager connectionManager,  ILogger<Program> logger) =>
+            app.MapGet("/api/notifications/stream", async (HttpContext context,
+                INotificationManager connectionManager,
+                ILogger<Program> logger) =>
             {
                 var userIdClaim = context.User.FindFirst(ClaimTypes.NameIdentifier);
 
@@ -156,10 +178,9 @@ namespace BookReader.NotificationService
                 }
                 finally
                 {
-                    logger.LogInformation(
-       "SSE disconnected. UserId: {UserId}, Aborted: {Aborted}",
-       userId,
-       context.RequestAborted.IsCancellationRequested);
+                    logger.LogInformation("SSE disconnected. UserId: {UserId}, Aborted: {Aborted}",
+                        userId,
+                        context.RequestAborted.IsCancellationRequested);
                     connectionManager.Remove(userId, context.Response);
                 }
 

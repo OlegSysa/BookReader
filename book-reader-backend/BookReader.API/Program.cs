@@ -25,9 +25,18 @@ namespace BookReader.API
                     keyVaultUrl,
                     new DefaultAzureCredential());
             }
-            builder.Host.UseSerilog();
-            Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(builder.Configuration).CreateLogger();
-            
+            builder.Host.UseSerilog((context, services, configuration) =>
+            {
+                configuration.ReadFrom.Configuration(context.Configuration);
+
+                if (!context.HostingEnvironment.IsDevelopment())
+                {
+                    configuration.WriteTo.ApplicationInsights(
+                        context.Configuration["ApplicationInsights:ConnectionString"],
+                        TelemetryConverter.Traces);
+                }
+            });
+
             builder.Services
                 .ResolveDependencies(builder.Configuration)
                 .AddInfrastructureServices(builder.Configuration);
