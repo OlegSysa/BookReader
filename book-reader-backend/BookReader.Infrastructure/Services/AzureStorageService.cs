@@ -13,8 +13,8 @@ namespace BookReader.Infrastructure.Services
     {
         private readonly BlobContainerClient _booksContainer;
         private readonly BlobContainerClient _parsedBooksContainer;
-        private readonly string _booksContainerName;
-        private readonly string _parsedBooksContainerName;
+        //private readonly string _booksContainerName;
+        //private readonly string _parsedBooksContainerName;
 
         public AzureStorageService(IOptions<AzureStorageOptions> options)
         {
@@ -23,8 +23,8 @@ namespace BookReader.Infrastructure.Services
 
             _booksContainer = serviceClient.GetBlobContainerClient(settings.BooksContainer);
             _parsedBooksContainer = serviceClient.GetBlobContainerClient(settings.ParsedBooksContainer);
-            _booksContainerName = settings.BooksContainer;
-            _parsedBooksContainerName = settings.ParsedBooksContainer;
+            //_booksContainerName = settings.BooksContainer;
+            //_parsedBooksContainerName = settings.ParsedBooksContainer;
         }
 
         public async Task<bool> DeleteBookFromStorage(int userId, string fileName)
@@ -78,38 +78,30 @@ namespace BookReader.Infrastructure.Services
 
         public async Task<UploadFileResult> SaveParsedBookToStorageAsync(int userId,
             int bookId,
-            string storageParsedFilesPath,
-            IEnumerable<DocumentNode> data,
+            DocumentNode data,
             CancellationToken token = default)
         {
-            var virtualDirPath = Path.Combine(userId.ToString(), bookId.ToString());
+            var path = Path.Combine(userId.ToString(), bookId.ToString());
             try
             {
+                var filePath = $"{path}.json";
+                await using var stream = new MemoryStream();
 
+                await JsonSerializer.SerializeAsync(
+                    stream,
+                    data,
+                    new JsonSerializerOptions { WriteIndented = true },
+                    token);
+                stream.Position = 0;
+                var blobClient = _parsedBooksContainer.GetBlobClient(filePath);
+                var res = await blobClient.UploadAsync(stream, overwrite: false, cancellationToken: token);
 
-                foreach (var (chapter, index) in data.Select((chapter, index) => (chapter, index)))
-                {
-                    var fileName = $"{index + 1}.json";
-                    await using var stream = new MemoryStream();
-
-                    await JsonSerializer.SerializeAsync(
-                        stream,
-                        chapter,
-                        new JsonSerializerOptions { WriteIndented = true },
-                        token);
-                    stream.Position = 0;
-                    var azureBlobFilePath = Path.Combine(virtualDirPath, fileName);
-                    var blobClient = _parsedBooksContainer.GetBlobClient(azureBlobFilePath);
-                    var res = await blobClient.UploadAsync(stream, overwrite: false, cancellationToken: token);
-                }
-                return new UploadFileResult(BookStatus.SavedToStorage, virtualDirPath);
+                return new UploadFileResult(BookStatus.SavedToStorage, filePath);
             }
             catch (Exception)
             {
                 throw;
             }
-
-           
         }
     }
 }

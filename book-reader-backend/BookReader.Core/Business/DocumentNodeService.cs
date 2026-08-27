@@ -6,6 +6,7 @@ using BookReader.Core.DTOs.Models;
 using BookReader.Core.Entities;
 using BookReader.Core.Enums;
 using BookReader.Core.Extensions;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
@@ -18,7 +19,7 @@ namespace BookReader.Core.Business
         private readonly IStorageService _storageService;
         private readonly IBookRepository _bookRepository;
         private readonly ICacheService _cacheService;
-        private const int CHARS_PER_PAGE = 1000;
+        private const int CHARS_PER_PAGE = 2000;
 
         public DocumentNodeService(IStorageService storageService,
             ICacheService cacheService,
@@ -31,94 +32,96 @@ namespace BookReader.Core.Business
             _bookRepository = bookRepository;
         }
 
-        public async Task<ServiceResult<ChapterViewResult>> GetRequiredChapterAsync(int bookId,
-            int chapterIndex,
-            int pageNumber, 
+        public async Task<ServiceResult<BookViewResult>> GetPageContentAsync(int userId, int bookId,
+            int pageNumber,
             CancellationToken token)
         {
-            var cacheKey = CacheExtensions.BuildChacheChapterKey(bookId, chapterIndex);
-            var chapter = await _cacheService.GetAsync<ChapterState>(cacheKey);
-            if (chapter == null)
+            var cacheKey = CacheExtensions.BuildChacheBookKey(userId, bookId);
+            var bookState = await _cacheService.GetAsync<BookState>(cacheKey);
+            if (bookState == null)
             {
                 var book = await _bookRepository.GetByIdAsync(bookId, token);
                 if (book == null || book.ParsedFilesPath == null)
-                    return new ServiceResult<ChapterViewResult>(null, $"Cannot find book. Id:{bookId}");
-                var fileName = $"{chapterIndex.ToString()}.json";
-                var filePath = Path.Combine(book.ParsedFilesPath, fileName);
-                if (string.IsNullOrEmpty(filePath))
-                    return new ServiceResult<ChapterViewResult>(null, $"Seems the book (Id: {bookId}) haven't been processed. The filepath is empty");
-
-                using var fileStream = await _storageService.GetParsedBookAsync(filePath);
+                    return new ServiceResult<BookViewResult>(null, $"Cannot find book. Id:{bookId}");
+                
+                using var fileStream = await _storageService.GetParsedBookAsync(book.ParsedFilesPath);
                 using var reader = new StreamReader(fileStream);
-                var rawChapter = await reader.ReadToEndAsync(token);
-                if (string.IsNullOrEmpty(rawChapter))
-                    return new ServiceResult<ChapterViewResult>(null, $"Cannot get text from file. Book. Id:{bookId}");
+                var rawBook = await reader.ReadToEndAsync(token);
+                if (string.IsNullOrEmpty(rawBook))
+                    return new ServiceResult<BookViewResult>(null, $"Cannot get text from file. Book. Id:{bookId}");
 
-                var chapterNode = JsonSerializer.Deserialize<DocumentNode>(rawChapter!);
-                if (chapterNode == null)
-                    return new ServiceResult<ChapterViewResult>(null, $"Cannot deserialize json from file. Book. Id:{bookId}");
+                var bookNode = JsonSerializer.Deserialize<DocumentNode>(rawBook);
+                if (bookNode == null)
+                    return new ServiceResult<BookViewResult>(null, $"Cannot deserialize json from file. Book. Id:{bookId}");
 
-                var chapterPages = new List<Page>();
-                foreach (var par in chapterNode.Children)
+                var pages = new List<BookPage>();
+                //var startPageNumber = 1;
+                //if (chapterIndex > 1)
+                //{
+                //    var prevChapterCacheKey = CacheExtensions.BuildChacheChapterKey(bookId, chapterIndex - 1);
+                //    var prevChapter = await _cacheService.GetAsync<BookState>(prevChapterCacheKey);
+                //    if (prevChapter != null)
+                //    {
+                //        //var prevChapterState = JsonSerializer.Deserialize<ChapterState>(prevChapter);
+
+                //            //startPageNumber = prevChapter.NumberOfPages + 1;
+
+                //       //await _cacheService.RemoveAsync(prevChapterCacheKey);
+                //    }
+
+                //}
+                var paragraphs = bookNode.Children.SelectMany(c => c.Children).ToList();
+                foreach (var par in paragraphs)
                 {
-                    CreatePage(chapterPages, par);
+                    CreatePage(pages, par);
                 }
-                chapter = new ChapterState()
-                { 
-                    Index = chapterIndex,
-                    Pages = chapterPages.ToDictionary(p=> p.Number),
+                bookState = new BookState()
+                {
+                    Pages = pages.ToDictionary(p => p.Number),
                     BookId = bookId,
-                    IsLastChapter = book.ChaptersCount == chapterIndex,
-                    IsLastPage = chapterPages.Count == pageNumber,
-                    NumberOfPages = chapterPages.Count
+                    NumberOfPages = pages.Count,
                 };
-                await _cacheService.SetAsync(cacheKey, chapter);
-                if (chapterIndex > 1)
-                {
-                    var prevChapterCacheKey = CacheExtensions.BuildChacheChapterKey(bookId, chapterIndex - 1);
-                    var prevChapter = await _cacheService.GetAsync<string>(prevChapterCacheKey);
-                    if (prevChapter != null)
-                        await _cacheService.RemoveAsync(prevChapterCacheKey);
-                }
+                
             }
 
-            var chapterContent = await BuildChapterHtmlContent(chapter, pageNumber, chapterIndex);
-            if (string.IsNullOrEmpty(chapterContent))
-                chapterContent = "<div>Empty</div>";
-            var res = new ChapterViewResult() { 
-                Content  = chapterContent,
-                Index = chapter.Index,
-                IsLastChapter = chapter.IsLastChapter,
-                IsLastPage = chapter.IsLastPage,
-                NumberOfPages = chapter.NumberOfPages
+            bookState.IsLastPage = bookState.Pages.Count == 0 || bookState.Pages.Count == pageNumber;
+            await _cacheService.SetAsync(cacheKey, bookState);
+
+            var bookContent = await BuildChapterHtmlContent(bookState, pageNumber);
+            if (string.IsNullOrEmpty(bookContent))
+                bookContent = "<div>Empty</div>";
+            var res = new BookViewResult()
+            {
+                Content = bookContent,
+                IsLastPage = bookState.IsLastPage,
+                NumberOfPages = bookState.NumberOfPages
             };
 
-            return new ServiceResult<ChapterViewResult>(res, null);
+            return new ServiceResult<BookViewResult>(res, null);
         }
 
-        private async Task<string> BuildChapterHtmlContent(ChapterState chapter,
-            int pageNumber,
-            int chapterIndex)
+        private async Task<string> BuildChapterHtmlContent(BookState book,
+            int pageNumber)
         {
             var context = BrowsingContext.New(Configuration.Default);
             var document = await context.OpenNewAsync();
 
-            if (!chapter.Pages.TryGetValue(pageNumber, out var currentPage))
+            if (!book.Pages.TryGetValue(pageNumber, out var currentPage))
                 return string.Empty;
 
-            foreach (var element in currentPage!.Paragraphs)
+            foreach (var par in currentPage.Paragraphs)
             {
-                CreateHtmlElement(document.Body!, element!, document);
+                CreateHtmlElement(document.Body!, par, document);
             }
             return document.DocumentElement.OuterHtml;
         }
 
-        private void CreatePage(List<Page> pagesList, DocumentNode node)
+        private void CreatePage(List<BookPage> pagesList, DocumentNode node)
         {
             var lastPage = pagesList.LastOrDefault();
             if (lastPage == null)
             {
-                lastPage = new Page()
+                lastPage = new BookPage()
                 {
                     Number = 1,
                     Paragraphs = new List<DocumentNode>() { node }
@@ -145,7 +148,7 @@ namespace BookReader.Core.Business
                         }).ToList();
                         skippedParagraphs += newPageParagraphs.Count;
                         lastAddedPageNumber++;
-                        var newPage = new Page()
+                        var newPage = new BookPage()
                         {
                             Paragraphs = newPageParagraphs,
                             Number = lastAddedPageNumber

@@ -4,7 +4,7 @@ using System.Text;
 
 namespace BookReader.Core.DTOs.Models
 {
-    public class Page
+    public class BookPage
     {
         public int Number { get; set; }
         public required List<DocumentNode> Paragraphs { get; set; }

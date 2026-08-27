@@ -53,17 +53,14 @@ namespace BookReader.Core.Business
                 await _repository.SaveChangesAsync();
                 await _eventPublisher.PublishAsync("book-notifications", new BookNotificationEvent(userId, bookId, book.Status), token);
 
-                var chapters = await parser.ParseFile(book.StoragePath);
-                book.ChaptersCount = chapters.Count();
+                var bookNode = await parser.ParseFile(book.StoragePath);
+                book.ChaptersCount = bookNode.Children.Count();
                 book.Status = BookStatus.Parsed;
                 await _repository.SaveChangesAsync();
                 await _eventPublisher.PublishAsync("book-notifications", new BookNotificationEvent(userId, bookId, book.Status), token);
                 _logger.LogInformation("[BOOK PROCESSING] PARSED. BookId: {BookId}", bookId);
-
-                var storageRootPath = _config["Storage:ParsedBooksPath"] ?? string.Empty;
                 var savingResult = await _storageService.SaveParsedBookToStorageAsync(book.UserId, book.Id,
-                    storageRootPath,
-                        chapters,
+                        bookNode,
                         token);
                 book.ParsedFilesPath = savingResult.Path;
                 book.Status = BookStatus.Ready;

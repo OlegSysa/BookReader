@@ -11,7 +11,6 @@ namespace BookReader.Core.Enums
         Image = 3,
         Paragraph = 4,
         Chapter = 5,
-        Body = 6,
-        Document = 7
+        Document = 6
     }
 }

@@ -1,23 +1,21 @@
 import { useEffect, useState } from "react";
 
 import {
-    getChapter,
+    getPageContent,
     getWordTranslation,
     getSentenceTranslation
 } from "../../api/ApiClient";
 
 import "./styles.css";
 
-interface ChapterProps {
+interface PageContent {
     bookId: number;
 }
 
-export default function Chapter({ bookId }: ChapterProps) {
+export default function PageContent({ bookId }: PageContent) {
     const [content, setContent] = useState("");
     const [page, setPage] = useState(1);
-    const [chapterIndex, setChapterIndex] = useState(2);
     const [hasNextPage, setHasNextPage] = useState(true);
-    const [hasNextChapter, setHasNextChapter] = useState(true);
     const [loading, setLoading] = useState(false);
 
     const [popup, setPopup] = useState<{
@@ -26,22 +24,20 @@ export default function Chapter({ bookId }: ChapterProps) {
         y: number;
     } | null>(null);
 
-    const loadPage = async (pageNumber: number) => {
+    const loadPage = async (
+        pageNumber: number
+    ) => {
         try {
             setLoading(true);
-            debugger;
-            if (!hasNextPage) {
-                setChapterIndex(chapterIndex + 1);
-            }
-            const result = await getChapter(
+
+            const result = await getPageContent(
                 bookId,
-                chapterIndex,
                 pageNumber
             );
-            setHasNextChapter(!result.data.isLastChapter);
-            setContent(result.data.content);
-            setHasNextPage(!result.data.isLastPage);
 
+            setPage(pageNumber);
+            setHasNextPage(!result.data.isLastPage);
+            setContent(result.data.content);
         }
         finally {
             setLoading(false);
@@ -51,6 +47,20 @@ export default function Chapter({ bookId }: ChapterProps) {
     useEffect(() => {
         loadPage(page);
     }, [page]);
+
+    const handleNext = async () => {
+        debugger;
+        if (hasNextPage) {
+            await loadPage(page + 1);
+            return;
+        }
+    };
+
+    const handlePrevious = async () => {
+        if (page > 1) {
+            await loadPage(page - 1);
+        }
+    };
 
     const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
         const target = e.target as HTMLElement;
@@ -141,7 +151,7 @@ export default function Chapter({ bookId }: ChapterProps) {
                 <div className="reader-pagination">
                     <button
                         disabled={page === 1 || loading}
-                        onClick={() => setPage((p) => p - 1)}
+                        onClick={handlePrevious}
                         aria-label="Previous page"
                     >
                         ←
@@ -152,8 +162,8 @@ export default function Chapter({ bookId }: ChapterProps) {
                     </span>
 
                     <button
-                        disabled={(!hasNextPage && !hasNextChapter) || loading}
-                        onClick={() => setPage((p) => p + 1)}
+                        disabled={(!hasNextPage) || loading}
+                        onClick={handleNext}
                         aria-label="Next page"
                     >
                         →

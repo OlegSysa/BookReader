@@ -9,6 +9,7 @@ using System.Text.Json;
 
 namespace BookReader.Infrastructure.Services
 {
+    [Obsolete]
     public class LocalStorageService : BaseService<LocalStorageService>, IStorageService
     {
         public LocalStorageService(IConfiguration _config,
@@ -47,26 +48,26 @@ namespace BookReader.Infrastructure.Services
             return true;
         }
 
-        public async Task<UploadFileResult> SaveParsedBookToStorageAsync(int userId, int bookId,
-            string storageParsedFilesPath,
-            IEnumerable<DocumentNode> data,
+        public async Task<UploadFileResult> SaveParsedBookToStorageAsync(int userId,
+            int bookId,
+            DocumentNode data,
             CancellationToken token)
         {
-            var bookPath = Path.Combine(storageParsedFilesPath, userId.ToString(), bookId.ToString());
+            var bookPath = Path.Combine(string.Empty, userId.ToString(), bookId.ToString());
             if (!Directory.Exists(bookPath))
             {
                 Directory.CreateDirectory(bookPath);
             }
-            foreach (var (chapter, index) in data.Select((chapter, index) => (chapter, index)))
-            {
-                var fileName = Path.Combine(bookPath, $"{index + 1}.json");
+            //foreach (var (chapter, index) in data.Select((chapter, index) => (chapter, index)))
+            //{
+            //    var fileName = Path.Combine(bookPath, $"{index + 1}.json");
  
-                await using var stream = File.Create(fileName);
-                await JsonSerializer.SerializeAsync(stream, chapter, new JsonSerializerOptions
-                {
-                    WriteIndented = true
-                });
-            }
+            //    await using var stream = File.Create(fileName);
+            //    await JsonSerializer.SerializeAsync(stream, chapter, new JsonSerializerOptions
+            //    {
+            //        WriteIndented = true
+            //    });
+            //}
             return new UploadFileResult(BookStatus.Ready, bookPath);
         }
 

@@ -4,5 +4,4 @@ export interface BookModel {
     fileSize: number;
     status: number;
     createdAtUtc: string;
-    chaptersCount: number;
 }

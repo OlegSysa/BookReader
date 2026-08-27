@@ -7,8 +7,8 @@ namespace BookReader.Core.Abstract.Services
         Task<UploadFileResult> SaveBookToStorageAsync(string storagePath, Stream stream,
             string fileName, int userId, CancellationToken token = default);
         Task<UploadFileResult> SaveParsedBookToStorageAsync(int userId,
-            int bookId, string storageParsedFilesPath,
-            IEnumerable<DocumentNode> data,
+            int bookId,
+            DocumentNode data,
             CancellationToken token = default);
 
         Task<bool> DeleteBookFromStorage(int userId, string fileName);
