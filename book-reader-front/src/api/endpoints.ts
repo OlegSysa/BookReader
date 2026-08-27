@@ -3,12 +3,10 @@ const NOTIFY_BASE = import.meta.env.VITE_NOTIFICATION_BASE_URL;
 export const ENDPOINTS = {
     books: `${API_BASE}/books`,
 
-    chapter: (bookId: number, chapterIndex: number, pageNumber: number) =>
-        `${API_BASE}/documentnode?bookId=${bookId}&chapterIndex=${chapterIndex}&pageNumber=${pageNumber}`,
-
+    pageContent: (bookId: number, pageNumber: number) =>
+        `${API_BASE}/documentnode?bookId=${bookId}&pageNumber=${pageNumber}`,
     translation: (value: string) =>
         `${API_BASE}/translation?value=${value}`,
-
     sentenceTranslation: (sentenceId: string, text: string) =>
         `${API_BASE}/translation/sentence-translation?sentenceId=${sentenceId}&value=${text}`,
     register: () =>

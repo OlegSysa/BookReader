@@ -1,6 +1,4 @@
-export interface Chapter {
-    index: number;
-    isLastChapter: boolean;
+export interface PageContent {
     numberOfPages: number;
     content: string;
     isLastPage: boolean;

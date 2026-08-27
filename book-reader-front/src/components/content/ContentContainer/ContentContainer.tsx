@@ -1,8 +1,8 @@
 import { NavLink, useParams } from "react-router-dom";
-import Chapter from "../chapter";
+import PageContent from "../PageContent";
 
 
-export default function ChapterPage() {
+export default function ContentContainer() {
     const { bookId } = useParams();
 
     if (!bookId) {
@@ -21,6 +21,6 @@ export default function ChapterPage() {
                 ← Back
             </NavLink>
         </nav>
-        <Chapter bookId={Number(bookId)} />;
+        <PageContent bookId={Number(bookId)} />;
     </div>)
 }

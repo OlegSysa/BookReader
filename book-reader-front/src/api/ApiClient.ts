@@ -1,6 +1,6 @@
 import { ENDPOINTS } from "./endpoints";
 import type { BookModel } from "./models/book";
-import type { Chapter } from "./models/chapter";
+import type { PageContent } from "./models/page-content";
 import type { ApiResponse } from "./models/http";
 
 async function apiFetch(
@@ -20,17 +20,16 @@ async function apiFetch(
     return response;
 }
 
-export async function getChapter(
+export async function getPageContent(
     bookId: number,
-    chapterIndex: number,
     pageNumber: number
-): Promise<ApiResponse<Chapter>> {
+): Promise<ApiResponse<PageContent>> {
     const response = await apiFetch(
-        ENDPOINTS.chapter(bookId, chapterIndex, pageNumber)
+        ENDPOINTS.pageContent(bookId, pageNumber)
     );
 
     if (!response.ok) {
-        throw new Error("Failed to load chapter");
+        throw new Error("Failed to load page");
     }
 
     return await response.json();

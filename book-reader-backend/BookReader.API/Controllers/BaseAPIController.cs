@@ -1,6 +1,7 @@
 ﻿using BookReader.API.Models.Responses;
 using BookReader.Core.DTOs.Models;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace BookReader.API.Controllers
 {
@@ -21,5 +22,12 @@ namespace BookReader.API.Controllers
 
             return StatusCode(code, respose);
         }
+
+        protected int UserId { get { 
+                var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (!int.TryParse(userIdClaim, out var userId))
+                    return 0;
+                else return userId;
+            } }
     }
 }

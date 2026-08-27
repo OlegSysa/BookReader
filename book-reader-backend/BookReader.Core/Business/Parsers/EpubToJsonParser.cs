@@ -5,6 +5,7 @@ using AngleSharp.Html.Parser;
 using BookReader.Core.Abstract.Services;
 using BookReader.Core.DTOs.Models;
 using BookReader.Core.Enums;
+using BookReader.Core.Extensions;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using VersOne.Epub;
@@ -19,9 +20,9 @@ namespace BookReader.Core.Business.Parsers
         {
             _storageService = storageService;
         }
-        public async Task<IEnumerable<DocumentNode>> ParseFile(string path)
+        public async Task<DocumentNode> ParseFile(string path)
         {
-            var chaptersResult = new List<DocumentNode>();
+            var chapters = new List<DocumentNode>();
             using var stream = await _storageService.GetBookAsync(path);
             var book = await EpubReader.ReadBookAsync(stream);
             var parser = new HtmlParser();
@@ -29,16 +30,13 @@ namespace BookReader.Core.Business.Parsers
             {
                
                 IDocument document = await parser.ParseDocumentAsync(chapter.Content);
-                var body = document.Body;
-                var all = document.All;
-                var paragraphsTest = document.QuerySelectorAll(_selectors);
                 var chapterElement = new DocumentNode()
                 {
                     NodeType = TextNodeType.Chapter
                 };
 
                 chapterElement.Attributes.Add("data-chapter-id", index.ToString());
-                chaptersResult.Add(chapterElement);
+                chapters.Add(chapterElement);
 
                 var paragraphs = document.QuerySelectorAll(_selectors);
                 for (int i = 0; i < paragraphs.Count; i++)
@@ -91,7 +89,12 @@ namespace BookReader.Core.Business.Parsers
                 }
                 chapterElement.CharsCount = chapterElement.Children.Sum(p => p.CharsCount);
             }
-            return chaptersResult;
+            var bookNode = new DocumentNode() { 
+                NodeType = TextNodeType.Document,
+                CharsCount = chapters.Sum(c=> c.Count()),
+                Children = chapters
+            };
+            return bookNode;
         }
     }
 }

@@ -10,6 +10,6 @@ namespace BookReader.Core.Abstract.Services
     {
         BookExtension Extension { get; }
         //Task<Dictionary<int, string>> ParseFile(string path);
-        Task<IEnumerable<DocumentNode>> ParseFile(string path);
+        Task<DocumentNode> ParseFile(string path);
     }
 }
