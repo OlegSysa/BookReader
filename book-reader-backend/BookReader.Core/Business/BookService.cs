@@ -102,6 +102,7 @@ namespace BookReader.Core.Services
         {
             try
             {
+                _logger.LogInformation("Getting books by user id. Test log. UserId: {UserId}", userId);
                 var res = await _bookRepository.GetByUserIdAsync(userId, token);
                 return new ServiceResult<IEnumerable<BookModel>>(res.ToDto(), null);
             }

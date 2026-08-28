@@ -32,6 +32,7 @@ namespace BookReader.BookProcessor.Services.Handlers
 
             foreach (var message in messages)
             {
+                _logger.LogInformation("Started message processing. Type: {EventType}, MessageId: {Id}", message.EventType, message.Id);
                 try
                 {
                     var data = JsonSerializer.Deserialize<BookDeletedPayload>(message.Payload);
@@ -39,6 +40,7 @@ namespace BookReader.BookProcessor.Services.Handlers
                     {
                         message.LastError = "Invalid BookDeleted payload";
                         message.ProcessedAtUtc = DateTime.UtcNow;
+                        _logger.LogError("Failed message processing. Cannot deserialize payload. Type: {EventType}, MessageId: {Id}", message.EventType, message.Id);
                         continue;
                     }
 
@@ -46,11 +48,15 @@ namespace BookReader.BookProcessor.Services.Handlers
                     var deletedParsedBook = await _storageService.DeleteParsedBookFromStorage(data.UserId, data.BookId, token);
 
                     if (deletedBook && deletedParsedBook)
+                    {
+                        _logger.LogInformation("Message succesfully processed. Type: {EventType}, MessageId: {Id}", message.EventType, message.Id);
                         message.ProcessedAtUtc = DateTime.UtcNow;
+                    }
+                       
                 }
                 catch (Exception e)
                 {
-                    _logger.LogError(e, "Failed to delete book from storage");
+                    _logger.LogError("Failed message processing. Type: {EventType}, MessageId: {Id}", message.EventType, message.Id);
                     message.RetryCount++;
                     message.LastError = e.Message;
 
@@ -58,6 +64,7 @@ namespace BookReader.BookProcessor.Services.Handlers
                 finally
                 {
                     await _outboxMessageRepository.SaveChangesAsync();
+                    _logger.LogInformation("Completed message processing. Type: {EventType}, MessageId: {Id}", message.EventType, message.Id);
                 }
             }
         }
