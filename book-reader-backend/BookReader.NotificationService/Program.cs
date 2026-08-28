@@ -29,25 +29,17 @@ namespace BookReader.NotificationService
                     keyVaultUrl,
                     new DefaultAzureCredential());
             }
-            builder.Host.UseSerilog();
-            if (!builder.Environment.IsDevelopment())
+            builder.Host.UseSerilog((context, services, configuration) =>
             {
-                var connectionString =
-                    builder.Configuration["ApplicationInsights:ConnectionString"];
+                configuration.ReadFrom.Configuration(context.Configuration);
 
-                Log.Logger = new LoggerConfiguration()
-                    .ReadFrom.Configuration(builder.Configuration)
-                    .WriteTo.ApplicationInsights(
-                        connectionString,
-                        TelemetryConverter.Traces)
-                    .CreateLogger();
-            }
-            else
-            {
-                Log.Logger = new LoggerConfiguration()
-                    .ReadFrom.Configuration(builder.Configuration)
-                    .CreateLogger();
-            }
+                if (!context.HostingEnvironment.IsDevelopment())
+                {
+                    configuration.WriteTo.ApplicationInsights(
+                        context.Configuration["ApplicationInsights:ConnectionString"],
+                        TelemetryConverter.Traces);
+                }
+            });
             builder.Services.AddSingleton<INotificationManager, NotificationManager>();
             builder.Services.AddAuthentication(options =>
             {

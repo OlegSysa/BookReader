@@ -33,25 +33,17 @@ namespace BookReader.BookProcessor
                     keyVaultUrl,
                     new DefaultAzureCredential());
             }
-            builder.Host.UseSerilog();
-            if (!builder.Environment.IsDevelopment())
+            builder.Host.UseSerilog((context, services, configuration) =>
             {
-                var serilogConnectionString =
-                    builder.Configuration["ApplicationInsights:ConnectionString"];
+                configuration.ReadFrom.Configuration(context.Configuration);
 
-                Log.Logger = new LoggerConfiguration()
-                    .ReadFrom.Configuration(builder.Configuration)
-                    .WriteTo.ApplicationInsights(
-                        serilogConnectionString,
-                        TelemetryConverter.Traces)
-                    .CreateLogger();
-            }
-            else
-            {
-                Log.Logger = new LoggerConfiguration()
-                    .ReadFrom.Configuration(builder.Configuration)
-                    .CreateLogger();
-            }
+                if (!context.HostingEnvironment.IsDevelopment())
+                {
+                    configuration.WriteTo.ApplicationInsights(
+                        context.Configuration["ApplicationInsights:ConnectionString"],
+                        TelemetryConverter.Traces);
+                }
+            });
             var connectionString = builder.Configuration.GetConnectionString("DatabaseConnection");
             builder.Services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(connectionString));
