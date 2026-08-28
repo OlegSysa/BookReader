@@ -28,7 +28,9 @@ namespace BookReader.API
             }
             builder.Host.UseSerilog((context, services, configuration) =>
             {
-                configuration.ReadFrom.Configuration(context.Configuration);
+                configuration
+                .ReadFrom.Configuration(context.Configuration)
+                .Enrich.FromLogContext();
 
                 if (!context.HostingEnvironment.IsDevelopment())
                 {
