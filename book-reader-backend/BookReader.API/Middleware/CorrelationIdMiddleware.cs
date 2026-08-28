@@ -1,4 +1,5 @@
-﻿using Serilog.Context;
+﻿using Serilog;
+using Serilog.Context;
 
 namespace BookReader.API.Middleware
 {
@@ -25,6 +26,7 @@ namespace BookReader.API.Middleware
 
             using (LogContext.PushProperty("CorrelationId", correlationId))
             {
+                Log.Information("Correlation ID test: {CorrelationId}", correlationId);
                 await _next(context);
             }
         }
