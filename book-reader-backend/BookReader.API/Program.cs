@@ -1,4 +1,5 @@
 using Azure.Identity;
+using BookReader.API.Middleware;
 using BookReader.Infrastructure.DependencyInjection;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -153,6 +154,7 @@ namespace BookReader.API
 
                 app.UseHttpsRedirection();
                 app.UseCors("front");
+                app.UseMiddleware<CorrelationIdMiddleware>();
                 app.UseAuthentication();
                 app.UseAuthorization();
                 app.MapControllers();
