@@ -17,6 +17,7 @@ namespace BookReader.API
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            builder.Services.AddHttpContextAccessor();
             if (!builder.Environment.IsDevelopment())
             {
                 var keyVaultUrl = new Uri(

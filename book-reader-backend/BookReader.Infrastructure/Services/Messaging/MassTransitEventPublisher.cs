@@ -12,13 +12,19 @@ namespace BookReader.Infrastructure.Services.Messaging
             _sendEndpointProvider = sendEndpointProvider;
         }
 
-        public async Task PublishAsync<TEvent>(string queueName, TEvent e, CancellationToken cancellationToken) 
+        public async Task PublishAsync<TEvent>(string queueName, TEvent e, string? correlationId, CancellationToken cancellationToken) 
             where TEvent : IBusinessEvent
         {
             var endpoint = await _sendEndpointProvider.GetSendEndpoint(
                 new Uri($"queue:{queueName}"));
 
-            await endpoint.Send(e, cancellationToken);
+            await endpoint.Send(e, context =>
+            {
+                if (!string.IsNullOrEmpty(correlationId))
+                {
+                    context.CorrelationId = Guid.Parse(correlationId);
+                }
+            }, cancellationToken);
         }
     }
 }

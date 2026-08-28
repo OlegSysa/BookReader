@@ -6,6 +6,7 @@ using BookReader.Core.DTOs.Models;
 using BookReader.Core.Entities;
 using BookReader.Core.Enums;
 using BookReader.Core.Extensions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -25,7 +26,8 @@ namespace BookReader.Core.Business
             ICacheService cacheService,
             IBookRepository bookRepository,
              Microsoft.Extensions.Configuration.IConfiguration config,
-            ILogger<DocumentNodeService> logger) : base(config, logger)
+            ILogger<DocumentNodeService> logger,
+            IHttpContextAccessor httpContextAccessor) : base(config, logger, httpContextAccessor)
         {
             _storageService = storageService;
             _cacheService = cacheService;

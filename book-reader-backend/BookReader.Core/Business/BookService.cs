@@ -7,6 +7,7 @@ using BookReader.Core.Entities;
 using BookReader.Core.Enums;
 using BookReader.Core.Events;
 using BookReader.Core.Extensions.Mappings;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Net.NetworkInformation;
@@ -26,7 +27,8 @@ namespace BookReader.Core.Services
             IEventPublisher eventPublisher,
             IConfiguration config,
             IOutboxMessageRepository outboxMessageRepository,
-            ILogger<BookService> logger) : base(config, logger)
+            ILogger<BookService> logger,
+            IHttpContextAccessor accessor) : base(config, logger, accessor)
         {
             _bookRepository = bookRepository;
             _storageService = storageService;
@@ -60,7 +62,7 @@ namespace BookReader.Core.Services
                 }
                 else
                 {
-                    await _eventPublisher.PublishAsync("book-notifications", new BookNotificationEvent(details.UserId, 0, BookStatus.SavedToStorage), token);
+                    await _eventPublisher.PublishAsync("book-notifications", new BookNotificationEvent(details.UserId, 0, BookStatus.SavedToStorage), CorrelationId, token);
                 }
 
                 var newBook = new Book()
@@ -81,8 +83,14 @@ namespace BookReader.Core.Services
                     _logger.LogError(message);
                     throw new Exception(message);
                 }
-                await _eventPublisher.PublishAsync("book-processing", new BookProcessingEvent(details.UserId, newBook.Id), token);
-                await _eventPublisher.PublishAsync("book-notifications", new BookNotificationEvent(details.UserId, newBook.Id, newBook.Status), token);
+                await _eventPublisher.PublishAsync("book-processing",
+                    new BookProcessingEvent(details.UserId, newBook.Id),
+                    CorrelationId,
+                    token);
+                await _eventPublisher.PublishAsync("book-notifications",
+                    new BookNotificationEvent(details.UserId, newBook.Id, newBook.Status),
+                    CorrelationId,
+                    token);
 
                 return new ServiceResult<UploadBookResult>(
                     new UploadBookResult(newBook, newBook.Status),
@@ -93,7 +101,11 @@ namespace BookReader.Core.Services
                 await _storageService.DeleteBookFromStorage(details.UserId, details.FileName);
                 var message = $"Failed to upload book file. Exception: {e.Message}";
                 _logger.LogError(message);
-                await _eventPublisher.PublishAsync("book-notifications", new BookNotificationEvent(details.UserId, 0, BookStatus.Failed, e.Message), token);
+                await _eventPublisher.PublishAsync("book-notifications", new BookNotificationEvent(details.UserId,
+                    0,
+                    BookStatus.Failed,
+                    e.Message),
+                    CorrelationId, token);
                 return new ServiceResult<UploadBookResult>(new UploadBookResult(null, BookStatus.Failed), message);
             }
         }
@@ -145,7 +157,8 @@ namespace BookReader.Core.Services
                 {
                     CreatedAtUtc = DateTime.UtcNow,
                     Payload = JsonSerializer.Serialize(payload),
-                    EventType = OutboxMessageType.BookDeleted
+                    EventType = OutboxMessageType.BookDeleted,
+                    CorrelationId = CorrelationId
                 };
 
                 await _outboxMessageRepository.AddAsync(outboxMessage, false);

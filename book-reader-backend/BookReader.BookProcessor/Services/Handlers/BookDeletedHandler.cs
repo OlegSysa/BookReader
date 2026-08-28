@@ -5,6 +5,7 @@ using BookReader.Core.DTOs.Models;
 using BookReader.Core.Entities;
 using BookReader.Core.Enums;
 using BookReader.Core.Extensions;
+using Serilog.Context;
 using System.Text.Json;
 
 namespace BookReader.BookProcessor.Services.Handlers
@@ -32,39 +33,42 @@ namespace BookReader.BookProcessor.Services.Handlers
 
             foreach (var message in messages)
             {
-                _logger.LogInformation("Started message processing. Type: {EventType}, MessageId: {Id}", message.EventType, message.Id);
-                try
+                using (LogContext.PushProperty("CorrelationId", message.CorrelationId))
                 {
-                    var data = JsonSerializer.Deserialize<BookDeletedPayload>(message.Payload);
-                    if (data == null)
+                    _logger.LogInformation("Started message processing. Type: {EventType}, MessageId: {Id}", message.EventType, message.Id);
+                    try
                     {
-                        message.LastError = "Invalid BookDeleted payload";
-                        message.ProcessedAtUtc = DateTime.UtcNow;
-                        _logger.LogError("Failed message processing. Cannot deserialize payload. Type: {EventType}, MessageId: {Id}", message.EventType, message.Id);
-                        continue;
+                        var data = JsonSerializer.Deserialize<BookDeletedPayload>(message.Payload);
+                        if (data == null)
+                        {
+                            message.LastError = "Invalid BookDeleted payload";
+                            message.ProcessedAtUtc = DateTime.UtcNow;
+                            _logger.LogError("Failed message processing. Cannot deserialize payload. Type: {EventType}, MessageId: {Id}", message.EventType, message.Id);
+                            continue;
+                        }
+
+                        var deletedBook = await _storageService.DeleteBookFromStorage(data.UserId, data.OriginalFileName);
+                        var deletedParsedBook = await _storageService.DeleteParsedBookFromStorage(data.UserId, data.BookId, token);
+
+                        if (deletedBook && deletedParsedBook)
+                        {
+                            _logger.LogInformation("Message succesfully processed. Type: {EventType}, MessageId: {Id}", message.EventType, message.Id);
+                            message.ProcessedAtUtc = DateTime.UtcNow;
+                        }
+
                     }
-
-                    var deletedBook = await _storageService.DeleteBookFromStorage(data.UserId, data.OriginalFileName);
-                    var deletedParsedBook = await _storageService.DeleteParsedBookFromStorage(data.UserId, data.BookId, token);
-
-                    if (deletedBook && deletedParsedBook)
+                    catch (Exception e)
                     {
-                        _logger.LogInformation("Message succesfully processed. Type: {EventType}, MessageId: {Id}", message.EventType, message.Id);
-                        message.ProcessedAtUtc = DateTime.UtcNow;
-                    }
-                       
-                }
-                catch (Exception e)
-                {
-                    _logger.LogError("Failed message processing. Type: {EventType}, MessageId: {Id}", message.EventType, message.Id);
-                    message.RetryCount++;
-                    message.LastError = e.Message;
+                        _logger.LogError("Failed message processing. Type: {EventType}, MessageId: {Id}", message.EventType, message.Id);
+                        message.RetryCount++;
+                        message.LastError = e.Message;
 
-                }
-                finally
-                {
-                    await _outboxMessageRepository.SaveChangesAsync();
-                    _logger.LogInformation("Completed message processing. Type: {EventType}, MessageId: {Id}", message.EventType, message.Id);
+                    }
+                    finally
+                    {
+                        await _outboxMessageRepository.SaveChangesAsync();
+                        _logger.LogInformation("Completed message processing. Type: {EventType}, MessageId: {Id}", message.EventType, message.Id);
+                    }
                 }
             }
         }

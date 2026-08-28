@@ -1,10 +1,6 @@
 ﻿using BookReader.Core.Events;
 using BookReader.NotificationService.Abstract;
-using BookReader.NotificationService.Services;
 using MassTransit;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace BookReader.NotificationService.Consumers
 {
@@ -18,8 +14,10 @@ namespace BookReader.NotificationService.Consumers
         }
         public async Task Consume(ConsumeContext<BookNotificationEvent> context)
         {
-            Console.WriteLine($"Notification received for user {context.Message.UserId}");
-            await _notificationManager.SendAsync(context.Message.UserId, context.Message);
+            using (Serilog.Context.LogContext.PushProperty("CorrelationId", context.CorrelationId))
+            {
+                await _notificationManager.SendAsync(context.Message.UserId, context.Message);
+            }
         }
 
     }

@@ -3,10 +3,11 @@ using BookReader.Core.Abstract.Services;
 using BookReader.Core.Business;
 using BookReader.Core.DTOs.Models;
 using BookReader.Core.Entities;
+using BookReader.Core.Extensions;
 using DeepL;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using BookReader.Core.Extensions;
 using System.Text.Json;
 
 namespace BookReader.Infrastructure.Services
@@ -18,7 +19,8 @@ namespace BookReader.Infrastructure.Services
         public TranslationService(ICacheService cacheService,
             ITranslationRespository translationRespository,
             IConfiguration config,
-            ILogger<TranslationService> logger) : base(config, logger)
+            ILogger<TranslationService> logger,
+            IHttpContextAccessor httpContextAccessor) : base(config, logger, httpContextAccessor)
         {
             _cacheService = cacheService;
             _translationRespository = translationRespository;

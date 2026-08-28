@@ -4,6 +4,7 @@ using BookReader.Core.Abstract.Services;
 using BookReader.Core.DTOs.Models;
 using BookReader.Core.Enums;
 using BookReader.Core.Services;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -16,6 +17,7 @@ public class BookServiceTests
     private Mock<IStorageService> _storage = null!;
     private Mock<ILogger<BookService>> _logger = null!;
     private Mock<IEventPublisher> _publisher = null!;
+    private Mock<IHttpContextAccessor> _accessor = null!;
     private Mock<IOutboxMessageRepository> _outboxMessageRepo = null!;
 
     private BookService _service = null!;
@@ -27,6 +29,7 @@ public class BookServiceTests
         _storage = new Mock<IStorageService>();
         _logger = new Mock<ILogger<BookService>>();
         _publisher = new Mock<IEventPublisher>();
+        _accessor = new Mock<IHttpContextAccessor>();
         _outboxMessageRepo = new Mock<IOutboxMessageRepository>();
         var configuration = new ConfigurationBuilder().Build();
         _service = new BookService(
@@ -35,7 +38,8 @@ public class BookServiceTests
             _publisher.Object,
             configuration,
             _outboxMessageRepo.Object,
-            _logger.Object);
+            _logger.Object, 
+            _accessor.Object);
     }
 
     [Test]

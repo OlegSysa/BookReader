@@ -1,5 +1,6 @@
 ﻿using BookReader.Core.Abstract.Services;
 using BookReader.Core.Business;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using StackExchange.Redis;
@@ -12,7 +13,8 @@ namespace BookReader.Infrastructure.Services
         private readonly IDatabase _database;
         public RedisService(IConnectionMultiplexer redis,
             IConfiguration config,
-            ILogger<RedisService> logger): base(config, logger)
+            ILogger<RedisService> logger,
+            IHttpContextAccessor httpContextAccessor) : base(config, logger, httpContextAccessor)
         {
             _database = redis.GetDatabase();
         }

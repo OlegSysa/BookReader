@@ -3,6 +3,7 @@ using BookReader.Core.Business;
 using BookReader.Core.DTOs.Models;
 using BookReader.Core.Entities;
 using BookReader.Core.Enums;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
@@ -13,7 +14,8 @@ namespace BookReader.Infrastructure.Services
     public class LocalStorageService : BaseService<LocalStorageService>, IStorageService
     {
         public LocalStorageService(IConfiguration _config,
-            ILogger<LocalStorageService> logger) : base(_config, logger)
+            ILogger<LocalStorageService> logger,
+            IHttpContextAccessor httpContextAccessor) : base(_config, logger, httpContextAccessor)
         {
         }
         public async Task<UploadFileResult> SaveBookToStorageAsync(string storagePath, Stream stream, 

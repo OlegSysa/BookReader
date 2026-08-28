@@ -3,6 +3,7 @@ using BookReader.Core.Abstract.Repositories;
 using BookReader.Core.Abstract.Services;
 using BookReader.Core.DTOs.Models;
 using BookReader.Core.Entities;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.Extensions.Configuration;
@@ -21,7 +22,8 @@ namespace BookReader.Core.Business
         public AuthService(IUserRepository userRepository,
             IPasswordHasher<User> hasher,
             IConfiguration config,
-            ILogger<AuthService> logger) : base(config, logger)
+            ILogger<AuthService> logger,
+            IHttpContextAccessor httpContextAccessor) : base(config, logger, httpContextAccessor)
         {
             _userRepository = userRepository;
             _passwordHasher = hasher;
