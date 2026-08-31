@@ -5,11 +5,17 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
+using Serilog;
 
 namespace BookReader.NotificationService.Services
 {
     public class NotificationManager : INotificationManager
     {
+        private readonly ILogger<NotificationManager> _logger;
+        public NotificationManager(ILogger<NotificationManager> logger)
+        {
+            _logger = logger;
+        }
         private readonly ConcurrentDictionary<int, List<HttpResponse>> _connections = new();
         public void Add(int userId, HttpResponse response)
         {
@@ -51,15 +57,11 @@ namespace BookReader.NotificationService.Services
 
         public async Task SendAsync<T>(int userId, T message)
         {
+            _logger.LogInformation("[NOTIFICATION_SERVICE] Got notification. User ID: {UserId}", userId);
             var connections = GetConnections(userId);
-
             var json = JsonSerializer.Serialize(message);
             foreach (var connection in connections)
             {
-
-                Console.WriteLine($"HasStarted: {connection.HasStarted}");
-                Console.WriteLine($"Completed: {connection.HttpContext.RequestAborted.IsCancellationRequested}");
-
                 await connection.WriteAsync($"data: {json}\n\n");
                 await connection.Body.FlushAsync();
             }

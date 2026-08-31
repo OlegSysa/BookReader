@@ -14,7 +14,6 @@ namespace BookReader.BookProcessor.Consumers
         }
         public async Task Consume(ConsumeContext<BookProcessingEvent> context)
         {
-
             using (Serilog.Context.LogContext.PushProperty("CorrelationId", context.CorrelationId))
             {
                 await _bookParserService.ParseBook(

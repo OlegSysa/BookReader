@@ -41,11 +41,17 @@ namespace BookReader.Core.Services
         {
             try
             {
+                _logger.LogInformation("[BOOKPROCESSOR.API] Started adding new book. FileName: {FileName}", details.FileName);
                 var isValidFile = await ValidateUploadBookModel(details, token);
                 if (!isValidFile)
                 {
-                    var message = $"Can not upload file. Invalid file details {details.FileName}";
-                    _logger.LogError(message);
+                    const string message = "Cannot upload file. Invalid file details.";
+
+                    _logger.LogError(
+                        "{Message} FileName: {FileName}",
+                        message,
+                        details.FileName);
+
                     return new ServiceResult<UploadBookResult>(
                         new UploadBookResult(null, BookStatus.Failed),
                         message);
@@ -57,12 +63,19 @@ namespace BookReader.Core.Services
                     details.UserId, token);
                 if (savingResult.Status == BookStatus.Failed)
                 {
-                    var message = $"Can not upload raw file {details.FileName}. Issue with file storage";
-                    _logger.LogError(message);
+                    _logger.LogError(
+                        "Cannot upload raw file {FileName}. Issue with file storage.",
+                        details.FileName);
                 }
                 else
                 {
-                    await _eventPublisher.PublishAsync("book-notifications", new BookNotificationEvent(details.UserId, 0, BookStatus.SavedToStorage), CorrelationId, token);
+                    _logger.LogInformation("[BOOKPROCESSOR.API] Saved book file. FileName: {FileName}", details.FileName);
+                    await _eventPublisher.PublishAsync("book-notifications",
+                        new BookNotificationEvent(details.UserId,
+                        0,
+                        BookStatus.SavedToStorage),
+                        CorrelationId,
+                        token);
                 }
 
                 var newBook = new Book()
@@ -79,10 +92,17 @@ namespace BookReader.Core.Services
                 var metadataSavingResult = await _bookRepository.AddNewBookAsync(newBook);
                 if (!metadataSavingResult)
                 {
-                    var message = $"File was uploaded, but metadata wasn't saved to db. Filename: {details.FileName}";
-                    _logger.LogError(message);
-                    throw new Exception(message);
+                    const string message =
+                        "File was uploaded, but metadata wasn't saved to database.";
+
+                    _logger.LogError(
+                        "{Message} FileName: {FileName}",
+                        message,
+                        details.FileName);
+
+                    throw new InvalidOperationException(message);
                 }
+                _logger.LogInformation("[BOOKPROCESSOR.API] Saved metadata to database. Book ID: {BookId}", newBook.Id);
                 await _eventPublisher.PublishAsync("book-processing",
                     new BookProcessingEvent(details.UserId, newBook.Id),
                     CorrelationId,

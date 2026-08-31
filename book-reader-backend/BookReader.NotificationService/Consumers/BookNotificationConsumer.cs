@@ -7,8 +7,7 @@ namespace BookReader.NotificationService.Consumers
     public class BookNotificationConsumer : IConsumer<BookNotificationEvent>
     {
         private readonly INotificationManager _notificationManager;
-        public BookNotificationConsumer(
-    INotificationManager notificationManager)
+        public BookNotificationConsumer(INotificationManager notificationManager)
         {
             _notificationManager = notificationManager;
         }

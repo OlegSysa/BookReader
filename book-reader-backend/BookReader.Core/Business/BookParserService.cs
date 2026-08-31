@@ -35,20 +35,26 @@ namespace BookReader.Core.Business
         {
             try
             {
-                _logger.LogInformation("[BOOK PROCESSING] STARTED. BookId: {BookId}", bookId);
+                _logger.LogInformation("[BOOKPROCESSOR] PROCESSING STARTED. BookId: {BookId}", bookId);
                 var book = await _repository.GetByIdAsync(bookId, token);
                 if (book == null)
                 {
-                    var message = $"Book with id '{{BookId}}' was not found.";
-                    _logger.LogError(message);
-                    throw new Exception(message);
+                    _logger.LogError(
+                        "Book with id {BookId} was not found.",
+                        bookId);
+
+                    throw new KeyNotFoundException(
+                        $"Book with id '{bookId}' was not found.");
                 }
                 var parser = GetParser(book.OriginalFileName);
                 if (parser == null)
                 {
-                    var message = "[BOOK PROCESSING] Parser is NULL";
-                    _logger.LogError(message);
-                    throw new Exception(message);
+                    _logger.LogError(
+                        "[BOOKPROCESSOR] Parser was not found for BookId {BookId}",
+                        bookId);
+
+                    throw new InvalidOperationException(
+                        $"[BOOKPROCESSOR] Parser was not found for BookId {bookId}");
                 }
 
                 book.Status = BookStatus.ProcessingStarted;
@@ -60,7 +66,7 @@ namespace BookReader.Core.Business
                 book.Status = BookStatus.Parsed;
                 await _repository.SaveChangesAsync();
                 await _eventPublisher.PublishAsync("book-notifications", new BookNotificationEvent(userId, bookId, book.Status), CorrelationId, token);
-                _logger.LogInformation("[BOOK PROCESSING] PARSED. BookId: {BookId}", bookId);
+                _logger.LogInformation("[BOOKPROCESSOR] BOOK PARSED. BookId: {BookId}", bookId);
                 var savingResult = await _storageService.SaveParsedBookToStorageAsync(book.UserId, book.Id,
                         bookNode,
                         token);
@@ -68,15 +74,30 @@ namespace BookReader.Core.Business
                 book.Status = BookStatus.Ready;
                 await _repository.SaveChangesAsync();
                 await _eventPublisher.PublishAsync("book-notifications", new BookNotificationEvent(userId, bookId, book.Status), CorrelationId, token);
-                _logger.LogInformation("[BOOK PROCESSING] SAVED PARSED RESULT. BookId: {BookId}, STATUS:{Status}", bookId, savingResult.Status);
+                _logger.LogInformation("[BOOKPROCESSOR] SAVED PARSED RESULT. BookId: {BookId}, STATUS:{Status}", bookId, savingResult.Status);
 
                 return true;
             }
             catch (Exception e)
             {
-                var errorMessage = $"[BOOK PROCESSING] Failed parse book. Id: {bookId}. Message: {e.Message}";
-                _logger.LogError(errorMessage);
-                await _eventPublisher.PublishAsync("book-notifications", new BookNotificationEvent(userId, bookId, BookStatus.Failed, errorMessage), CorrelationId, token);
+                _logger.LogError(
+                    e,
+                    "[BOOKPROCESSOR] Failed to parse book. BookId: {BookId}",
+                    bookId);
+
+                var errorMessage =
+                    $"Failed to parse book with ID {bookId}. Error: {e.Message}";
+
+                await _eventPublisher.PublishAsync(
+                    "book-notifications",
+                    new BookNotificationEvent(
+                        userId,
+                        bookId,
+                        BookStatus.Failed,
+                        errorMessage),
+                    CorrelationId,
+                    token);
+
                 return false;
             }
         }
