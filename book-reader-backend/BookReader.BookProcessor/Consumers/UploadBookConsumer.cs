@@ -2,21 +2,18 @@
 using BookReader.Core.Events;
 using MassTransit;
 using Serilog.Context;
+using Serilog.Core;
 
 namespace BookReader.BookProcessor.Consumers
 {
     public class UploadBookConsumer : IConsumer<BookProcessingEvent>
     {
         private readonly ILogger<UploadBookConsumer> _logger;
-
-        public UploadBookConsumer(ILogger<UploadBookConsumer> logger)
-        {
-            _logger = logger;
-        }
         private readonly IBookParserService _bookParserService;
-        public UploadBookConsumer(IBookParserService bookParserService)
+        public UploadBookConsumer(IBookParserService bookParserService, ILogger<UploadBookConsumer> logger)
         {
             _bookParserService = bookParserService;
+            _logger = logger;
         }
         public async Task Consume(ConsumeContext<BookProcessingEvent> context)
         {
