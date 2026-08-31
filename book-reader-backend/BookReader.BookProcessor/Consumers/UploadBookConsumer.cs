@@ -7,6 +7,12 @@ namespace BookReader.BookProcessor.Consumers
 {
     public class UploadBookConsumer : IConsumer<BookProcessingEvent>
     {
+        private readonly ILogger<UploadBookConsumer> _logger;
+
+        public UploadBookConsumer(ILogger<UploadBookConsumer> logger)
+        {
+            _logger = logger;
+        }
         private readonly IBookParserService _bookParserService;
         public UploadBookConsumer(IBookParserService bookParserService)
         {
@@ -14,6 +20,9 @@ namespace BookReader.BookProcessor.Consumers
         }
         public async Task Consume(ConsumeContext<BookProcessingEvent> context)
         {
+            _logger.LogInformation("Received message. MessageId: {MessageId}, CorrelationId: {CorrelationId}",
+                context.MessageId,
+                context.CorrelationId);
             using (Serilog.Context.LogContext.PushProperty("CorrelationId", context.CorrelationId))
             {
                 await _bookParserService.ParseBook(
