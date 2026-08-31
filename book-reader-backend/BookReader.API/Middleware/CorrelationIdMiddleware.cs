@@ -22,6 +22,7 @@ namespace BookReader.API.Middleware
                 correlationId = Guid.NewGuid().ToString();
             }
 
+            context.Request.Headers[HeaderName] = correlationId;
             context.Response.Headers[HeaderName] = correlationId;
 
             using (LogContext.PushProperty("CorrelationId", correlationId))
