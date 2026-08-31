@@ -19,6 +19,9 @@ namespace BookReader.Core.Business
             _httpContextAccessor = accessor;
         }
 
+        /// <summary>
+        /// Only for http services (not consumers)
+        /// </summary>
         protected string? CorrelationId =>
             _httpContextAccessor.HttpContext?
                 .Request.Headers["X-Correlation-ID"]

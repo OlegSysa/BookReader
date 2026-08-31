@@ -20,11 +20,13 @@ namespace BookReader.BookProcessor.Consumers
             _logger.LogInformation("Received message. MessageId: {MessageId}, CorrelationId: {CorrelationId}",
                 context.MessageId,
                 context.CorrelationId);
+            var correlationId = context.CorrelationId.ToString();
             using (Serilog.Context.LogContext.PushProperty("CorrelationId", context.CorrelationId))
             {
                 await _bookParserService.ParseBook(
                     context.Message.UserId,
                     context.Message.BookId,
+                    correlationId,
                     context.CancellationToken);
             }
         }

@@ -31,7 +31,7 @@ namespace BookReader.Core.Business
             _parsers = parsers;
             _eventPublisher = eventPublisher;
         }
-        public async Task<bool> ParseBook(int userId, int bookId, CancellationToken token)
+        public async Task<bool> ParseBook(int userId, int bookId, string? correlationId, CancellationToken token)
         {
             try
             {
@@ -59,13 +59,13 @@ namespace BookReader.Core.Business
 
                 book.Status = BookStatus.ProcessingStarted;
                 await _repository.SaveChangesAsync();
-                await _eventPublisher.PublishAsync("book-notifications", new BookNotificationEvent(userId, bookId, book.Status), CorrelationId, token);
+                await _eventPublisher.PublishAsync("book-notifications", new BookNotificationEvent(userId, bookId, book.Status), correlationId, token);
 
                 var bookNode = await parser.ParseFile(book.StoragePath);
                 book.ChaptersCount = bookNode.Children.Count();
                 book.Status = BookStatus.Parsed;
                 await _repository.SaveChangesAsync();
-                await _eventPublisher.PublishAsync("book-notifications", new BookNotificationEvent(userId, bookId, book.Status), CorrelationId, token);
+                await _eventPublisher.PublishAsync("book-notifications", new BookNotificationEvent(userId, bookId, book.Status), correlationId, token);
                 _logger.LogInformation("[BOOKPROCESSOR] BOOK PARSED. BookId: {BookId}", bookId);
                 var savingResult = await _storageService.SaveParsedBookToStorageAsync(book.UserId, book.Id,
                         bookNode,
@@ -73,7 +73,7 @@ namespace BookReader.Core.Business
                 book.ParsedFilesPath = savingResult.Path;
                 book.Status = BookStatus.Ready;
                 await _repository.SaveChangesAsync();
-                await _eventPublisher.PublishAsync("book-notifications", new BookNotificationEvent(userId, bookId, book.Status), CorrelationId, token);
+                await _eventPublisher.PublishAsync("book-notifications", new BookNotificationEvent(userId, bookId, book.Status), correlationId, token);
                 _logger.LogInformation("[BOOKPROCESSOR] SAVED PARSED RESULT. BookId: {BookId}, STATUS:{Status}", bookId, savingResult.Status);
 
                 return true;
@@ -95,7 +95,7 @@ namespace BookReader.Core.Business
                         bookId,
                         BookStatus.Failed,
                         errorMessage),
-                    CorrelationId,
+                    correlationId,
                     token);
 
                 return false;

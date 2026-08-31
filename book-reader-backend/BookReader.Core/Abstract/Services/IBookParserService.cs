@@ -6,6 +6,6 @@ namespace BookReader.Core.Abstract.Services
 {
     public interface IBookParserService
     {
-        Task<bool> ParseBook(int userId, int bookId, CancellationToken token);
+        Task<bool> ParseBook(int userId, int bookId, string? correlationId, CancellationToken token);
     }
 }

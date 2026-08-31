@@ -14,7 +14,7 @@ namespace BookReader.Infrastructure.Services.Messaging.Handlers
         }
         public Task HandleAsync(BookProcessingEvent e, CancellationToken token)
         {
-            return _bookParserService.ParseBook(e.UserId, e.BookId, token);
+            return _bookParserService.ParseBook(e.UserId, e.BookId, "empty correlation ID", token);
         }
     }
 }
