@@ -9,6 +9,7 @@ namespace BookReader.Core.Enums
         epub = 1,
         pdf = 2,
         word = 3,
-        txt = 4
+        txt = 4,
+        fb2 = 5,
     }
 }
