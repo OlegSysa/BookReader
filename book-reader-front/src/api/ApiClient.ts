@@ -106,3 +106,18 @@ export async function uploadBook(file: File, title: string, author: string) {
 
     return response.json();
 }
+
+export const addWordToLearning = async (word: string) => {
+
+    const response = await apiFetch(ENDPOINTS.learnWord(), {
+        method: "POST",
+        body: word,
+        credentials: "include"
+    });
+
+    if (!response.ok) {
+        throw new Error("Failed to add word to learning");
+    }
+
+    return response.json();
+};

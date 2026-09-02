@@ -24,4 +24,7 @@ export const ENDPOINTS = {
         `${NOTIFY_BASE}/api/notifications/stream/`,
     deleteBook: (id: number) =>
         `${API_BASE}/book?bookId=${id}`,
+    learnWord: () =>
+        `${API_BASE} /words/learning`,
+
 };

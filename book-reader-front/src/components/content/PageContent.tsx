@@ -3,7 +3,8 @@ import { useEffect, useState } from "react";
 import {
     getPageContent,
     getWordTranslation,
-    getSentenceTranslation
+    getSentenceTranslation,
+    addWordToLearning
 } from "../../api/ApiClient";
 
 import "./styles.css";
@@ -20,6 +21,7 @@ export default function PageContent({ bookId }: PageContent) {
 
     const [popup, setPopup] = useState<{
         text: string;
+        word?: string;
         x: number;
         y: number;
     } | null>(null);
@@ -77,6 +79,7 @@ export default function PageContent({ bookId }: PageContent) {
 
                 setPopup({
                     text: result.data,
+                    word: word.textContent,
                     x: rect.left + rect.width / 2,
                     y: rect.top - 10
                 });
@@ -129,6 +132,23 @@ export default function PageContent({ bookId }: PageContent) {
         }
     };
 
+    const handleLearnWord = async (
+        e: React.MouseEvent<HTMLButtonElement>
+    ) => {
+        e.stopPropagation();
+        if (!popup?.word) {
+            return;
+        }
+
+        try {
+            await addWordToLearning(popup.word);
+            setPopup(null);
+        }
+        catch {
+        }
+    };
+
+
     if (!content) {
         return <div>Loading...</div>
     }
@@ -178,8 +198,18 @@ export default function PageContent({ bookId }: PageContent) {
                         left: popup.x,
                         top: popup.y
                     }}
+                    onClick={(e) => e.stopPropagation()}
                 >
-                    {popup.text}
+                    <span>{popup.text}</span>
+
+                    {popup.word && (
+                        <button
+                            className="learn-word-button"
+                            onClick={handleLearnWord}
+                        >
+                            +
+                        </button>
+                    )}
                 </div>
             )}
         </div>
