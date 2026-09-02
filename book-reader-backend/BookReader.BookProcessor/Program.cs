@@ -55,6 +55,7 @@ namespace BookReader.BookProcessor
             builder.Services.AddScoped<IBookParserService, BookParserService>();
             builder.Services.AddScoped<IParser, EpubToJsonParser>();
             builder.Services.AddScoped<IParser, Fb2ToJsonParser>();
+            builder.Services.AddScoped<IParser, PdfToJsonParser>();
             builder.Services.AddScoped<IOutboxMessageHandler, BookDeletedHandler>();
             builder.Services.Configure<AzureStorageOptions>(builder.Configuration.GetSection("AzureStorage"));
             builder.Services.AddHostedService<OutboxMessageProcessor>();
