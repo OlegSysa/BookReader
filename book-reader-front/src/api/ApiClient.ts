@@ -23,10 +23,11 @@ async function apiFetch(
 
 export async function getPageContent(
     bookId: number,
-    pageNumber: number
+    pageNumber: number,
+    useBookmark: boolean
 ): Promise<ApiResponse<PageContent>> {
     const response = await apiFetch(
-        ENDPOINTS.pageContent(bookId, pageNumber)
+        ENDPOINTS.getPageContent(bookId, pageNumber, useBookmark)
     );
 
     if (!response.ok) {

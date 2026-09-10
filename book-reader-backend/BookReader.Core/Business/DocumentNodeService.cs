@@ -4,6 +4,7 @@ using BookReader.Core.Abstract.Business;
 using BookReader.Core.Abstract.Repositories;
 using BookReader.Core.Abstract.Services;
 using BookReader.Core.DTOs.Models;
+using BookReader.Core.Entities;
 using BookReader.Core.Enums;
 using BookReader.Core.Extensions;
 using Microsoft.AspNetCore.Http;
@@ -33,7 +34,7 @@ namespace BookReader.Core.Business
         }
 
         public async Task<ServiceResult<BookViewResult>> GetPageContentAsync(int userId, int bookId,
-            int pageNumber,
+            int pageNumber, bool useBookmark,
             CancellationToken token)
         {
             var cacheKey = CacheExtensions.BuildChacheBookKey(userId, bookId);
@@ -43,7 +44,7 @@ namespace BookReader.Core.Business
                 var book = await _bookRepository.GetByIdAsync(bookId, token);
                 if (book == null || book.ParsedFilesPath == null)
                     return new ServiceResult<BookViewResult>(null, $"Cannot find book. Id:{bookId}");
-                
+
                 using var fileStream = await _storageService.GetParsedBookAsync(book.ParsedFilesPath);
                 using var reader = new StreamReader(fileStream);
                 var rawBook = await reader.ReadToEndAsync(token);
@@ -66,23 +67,43 @@ namespace BookReader.Core.Business
                     BookId = bookId,
                     NumberOfPages = pages.Count,
                 };
-                
             }
-
+            pageNumber = await UpdateBookmark(bookId, pageNumber, useBookmark);
             bookState.IsLastPage = bookState.Pages.Count == 0 || bookState.Pages.Count == pageNumber;
             await _cacheService.SetAsync(cacheKey, bookState);
 
             var bookContent = await BuildChapterHtmlContent(bookState, pageNumber);
             if (string.IsNullOrEmpty(bookContent))
                 bookContent = "<div>Empty</div>";
+
             var res = new BookViewResult()
             {
                 Content = bookContent,
                 IsLastPage = bookState.IsLastPage,
-                NumberOfPages = bookState.NumberOfPages
+                NumberOfPages = bookState.NumberOfPages,
+                CurrentPageNumber = pageNumber
             };
 
             return new ServiceResult<BookViewResult>(res, null);
+        }
+
+        private async Task<int> UpdateBookmark(int bookId, int pageNumber, bool useBookmark)
+        {
+            var book = await _bookRepository.GetByIdAsync(bookId, CancellationToken.None);
+            if (book == null)
+                return 1;
+
+            if (pageNumber < book.Bookmark && useBookmark)
+            {
+                pageNumber = book.Bookmark;
+            }
+            else if(!useBookmark)
+            {
+                book?.Bookmark = pageNumber;
+                await _bookRepository.SaveChangesAsync();
+            }
+
+            return pageNumber;
         }
 
         private async Task<string> BuildChapterHtmlContent(BookState book,

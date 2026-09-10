@@ -6,6 +6,7 @@ namespace BookReader.Core.Abstract.Services
     {
         Task<ServiceResult<BookViewResult>> GetPageContentAsync(int userId, int bookId,
             int pageNumber,
+            bool useBookmark,
             CancellationToken token);
     }
 }

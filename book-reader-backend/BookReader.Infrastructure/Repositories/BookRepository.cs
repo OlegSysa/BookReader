@@ -39,7 +39,6 @@ namespace BookReader.Infrastructure.Repositories
             await _context.SaveChangesAsync(); 
             return true;
         }
-
        
     }
 }

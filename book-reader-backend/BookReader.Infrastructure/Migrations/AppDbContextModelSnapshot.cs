@@ -34,7 +34,7 @@ namespace BookReader.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("Bokkmark")
+                    b.Property<int>("Bookmark")
                         .HasColumnType("integer");
 
                     b.Property<int>("ChaptersCount")

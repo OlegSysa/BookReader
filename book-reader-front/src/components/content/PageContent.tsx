@@ -27,17 +27,19 @@ export default function PageContent({ bookId }: PageContent) {
     } | null>(null);
 
     const loadPage = async (
-        pageNumber: number
+        pageNumber: number,
+        useBookmark: boolean
     ) => {
         try {
             setLoading(true);
 
             const result = await getPageContent(
                 bookId,
-                pageNumber
+                pageNumber,
+                useBookmark
             );
 
-            setPage(pageNumber);
+            setPage(result.data.currentPageNumber);
             setHasNextPage(!result.data.isLastPage);
             setContent(result.data.content);
         }
@@ -47,20 +49,20 @@ export default function PageContent({ bookId }: PageContent) {
     };
 
     useEffect(() => {
-        loadPage(page);
+        loadPage(page, true);
     }, [page]);
 
     const handleNext = async () => {
         debugger;
         if (hasNextPage) {
-            await loadPage(page + 1);
+            await loadPage(page + 1, false);
             return;
         }
     };
 
     const handlePrevious = async () => {
         if (page > 1) {
-            await loadPage(page - 1);
+            await loadPage(page - 1, false);
         }
     };
 

@@ -11,6 +11,7 @@ namespace BookReader.Core.DTOs.Models
         public int NumberOfPages { get; set; }
         public bool IsLastPage { get; set; }
         public required string Content { get; set; }
+        public int CurrentPageNumber { get; set; }
 
     }
 }

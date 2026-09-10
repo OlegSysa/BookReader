@@ -3,8 +3,8 @@ const NOTIFY_BASE = import.meta.env.VITE_NOTIFICATION_BASE_URL;
 export const ENDPOINTS = {
     books: `${API_BASE}/books`,
 
-    pageContent: (bookId: number, pageNumber: number) =>
-        `${API_BASE}/documentnode?bookId=${bookId}&pageNumber=${pageNumber}`,
+    getPageContent: (bookId: number, pageNumber: number, useBookmark: boolean) =>
+        `${API_BASE}/documentnode?bookId=${bookId}&pageNumber=${pageNumber}&useBookmark=${useBookmark}`,
     translation: (value: string) =>
         `${API_BASE}/translation?value=${value}`,
     sentenceTranslation: (sentenceId: string, text: string) =>
