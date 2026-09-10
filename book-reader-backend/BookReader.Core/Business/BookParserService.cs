@@ -62,7 +62,7 @@ namespace BookReader.Core.Business
                 await _eventPublisher.PublishAsync("book-notifications", new BookNotificationEvent(userId, bookId, book.Status), correlationId, token);
 
                 var bookNode = await parser.ParseFile(book.StoragePath);
-                book.ChaptersCount = bookNode.Children.Count();
+                book.ChaptersCount = bookNode.Children.Count;
                 book.Status = BookStatus.Parsed;
                 await _repository.SaveChangesAsync();
                 await _eventPublisher.PublishAsync("book-notifications", new BookNotificationEvent(userId, bookId, book.Status), correlationId, token);

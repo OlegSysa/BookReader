@@ -36,22 +36,26 @@ namespace BookReader.Infrastructure.Services
                 if (!string.IsNullOrEmpty(cachedTranslation))
                     return new ServiceResult<string>(cachedTranslation, string.Empty);
 
-                var result = await ExecuteTraslation(input, token);
+                var translationResult = string.Empty;
                 var translationEntity = await _translationRespository.GetAsync(sourceLang, targetLang, input, token);
                 if (translationEntity == null)
                 {
+                    translationResult = await ExecuteTraslation(input, token);
                     translationEntity = new Translation()
-                        {
-                            SourceLang = sourceLang,
-                            TargetLang = targetLang,
-                            SourceWord = input,
-                            TranslatedWord = result
-                        };
+                    {
+                        SourceLang = sourceLang,
+                        TargetLang = targetLang,
+                        SourceWord = input,
+                        TranslatedWord = translationResult
+                    };
                     await _translationRespository.AddTranslationAsync(translationEntity, token);
                 }
-                
-                await _cacheService.SetAsync<string>(translationKey, result);
-                return new ServiceResult<string>(result, string.Empty);
+                else
+                    translationResult = translationEntity.TranslatedWord;
+
+
+                await _cacheService.SetAsync<string>(translationKey, translationResult);
+                return new ServiceResult<string>(translationResult, string.Empty);
             }
             catch (Exception e)
             {

@@ -2,6 +2,7 @@
 using AngleSharp.Css.Dom;
 using AngleSharp.Dom;
 using AngleSharp.Html.Parser;
+using BookReader.Core.Abstract.Business;
 using BookReader.Core.Abstract.Services;
 using BookReader.Core.DTOs.Models;
 using BookReader.Core.Enums;
@@ -20,17 +21,16 @@ namespace BookReader.Core.Business.Parsers
         {
             _storageService = storageService;
         }
-        public async Task<DocumentNode> ParseFile(string path)
+        public async Task<CompositeNode> ParseFile(string path)
         {
-            var chapters = new List<DocumentNode>();
+            var chapters = new List<ITextElement>();
             using var stream = await _storageService.GetBookAsync(path);
             var book = await EpubReader.ReadBookAsync(stream);
             var parser = new HtmlParser();
             foreach (var (chapter, index) in book.ReadingOrder.Select((chapter, index) => (chapter, index)))
             {
-               
                 IDocument document = await parser.ParseDocumentAsync(chapter.Content);
-                var chapterElement = new DocumentNode()
+                var chapterElement = new CompositeNode()
                 {
                     NodeType = TextNodeType.Chapter
                 };
@@ -43,7 +43,7 @@ namespace BookReader.Core.Business.Parsers
                 {
                     var p = paragraphs[i];
                     var pStyles = p.GetAttribute("style");
-                    var paragraph = new DocumentNode()
+                    var paragraph = new CompositeNode()
                     {
                         NodeType = TextNodeType.Paragraph
                     };
@@ -60,16 +60,15 @@ namespace BookReader.Core.Business.Parsers
                     var sentences = Regex.Matches(p.Text(), @"[^.!?]+(?:[.!?]+|$)")
                         .Select(m => m.Value.Trim())
                         .ToList();
-                    paragraph.CharsCount = sentences.Sum(s => s.Length);
+                    //paragraph.CharsCount = sentences.Sum(s => s.Length);
                     for (int j = 0; j < sentences.Count; j++)
                     {
                         var s = sentences[j];
                         if (string.IsNullOrEmpty(s))
                             continue;
-                        var sentenceTextObject = new DocumentNode()
+                        var sentenceTextObject = new CompositeNode()
                         {
-                            NodeType = TextNodeType.Sentence,
-                            CharsCount = s.Length
+                            NodeType = TextNodeType.Sentence
                         };
                         sentenceTextObject.Attributes.Add("data-sentence-id", j.ToString());
                         paragraph.Children.Add(sentenceTextObject);
@@ -77,7 +76,7 @@ namespace BookReader.Core.Business.Parsers
                         for (int k = 0; k < words.Length; k++)
                         {
                            var w = words[k];
-                           var textValue = new DocumentNode()
+                           var textValue = new TextNode()
                            {
                               Value = w,
                               NodeType = TextNodeType.Word
@@ -87,13 +86,12 @@ namespace BookReader.Core.Business.Parsers
                         }
                     }
                 }
-                chapterElement.CharsCount = chapterElement.Children.Sum(p => p.CharsCount);
+               // chapterElement.CharsCount = chapterElement.Children.Sum(p => p.CharsCount);
             }
-            var bookNode = new DocumentNode() { 
+            var bookNode = new CompositeNode() { 
                 NodeType = TextNodeType.Document,
-                CharsCount = chapters.Sum(c=> c.Count()),
-                Children = chapters
             };
+            bookNode.Children.AddRange(chapters);
             return bookNode;
         }
     }

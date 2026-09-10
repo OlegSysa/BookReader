@@ -1,14 +1,12 @@
 ﻿using AngleSharp;
 using AngleSharp.Dom;
+using BookReader.Core.Abstract.Business;
 using BookReader.Core.Abstract.Repositories;
 using BookReader.Core.Abstract.Services;
 using BookReader.Core.DTOs.Models;
-using BookReader.Core.Entities;
 using BookReader.Core.Enums;
 using BookReader.Core.Extensions;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
 
@@ -52,28 +50,13 @@ namespace BookReader.Core.Business
                 if (string.IsNullOrEmpty(rawBook))
                     return new ServiceResult<BookViewResult>(null, $"Cannot get text from file. Book. Id:{bookId}");
 
-                var bookNode = JsonSerializer.Deserialize<DocumentNode>(rawBook);
+                var bookNode = JsonSerializer.Deserialize<CompositeNode>(rawBook);
                 if (bookNode == null)
                     return new ServiceResult<BookViewResult>(null, $"Cannot deserialize json from file. Book. Id:{bookId}");
 
                 var pages = new List<BookPage>();
-                //var startPageNumber = 1;
-                //if (chapterIndex > 1)
-                //{
-                //    var prevChapterCacheKey = CacheExtensions.BuildChacheChapterKey(bookId, chapterIndex - 1);
-                //    var prevChapter = await _cacheService.GetAsync<BookState>(prevChapterCacheKey);
-                //    if (prevChapter != null)
-                //    {
-                //        //var prevChapterState = JsonSerializer.Deserialize<ChapterState>(prevChapter);
-
-                //            //startPageNumber = prevChapter.NumberOfPages + 1;
-
-                //       //await _cacheService.RemoveAsync(prevChapterCacheKey);
-                //    }
-
-                //}
-                var paragraphs = bookNode.Children.SelectMany(c => c.Children).ToList();
-                foreach (var par in paragraphs)
+                var paragraphs = bookNode.Children.Cast<CompositeNode>().SelectMany(c => c.Children).ToList();
+                foreach (var par in paragraphs.Cast<CompositeNode>())
                 {
                     CreatePage(pages, par);
                 }
@@ -118,7 +101,7 @@ namespace BookReader.Core.Business
             return document.DocumentElement.OuterHtml;
         }
 
-        private void CreatePage(List<BookPage> pagesList, DocumentNode node)
+        private void CreatePage(List<BookPage> pagesList, CompositeNode node)
         {
             var lastPage = pagesList.LastOrDefault();
             if (lastPage == null)
@@ -126,14 +109,14 @@ namespace BookReader.Core.Business
                 lastPage = new BookPage()
                 {
                     Number = 1,
-                    Paragraphs = new List<DocumentNode>() { node }
+                    Paragraphs = new List<ITextElement>() { node }
                 };
                 pagesList.Add(lastPage);
             }
             else
             {
-                var lastPageCount = lastPage.Paragraphs.Sum(p => p.Count());
-                var totalCharsCount = lastPageCount + node.Count();
+                var lastPageCount = lastPage.Paragraphs.Sum(p => p.CharsCount);
+                var totalCharsCount = lastPageCount + node.CharsCount;
                 if (totalCharsCount >= CHARS_PER_PAGE)
                 {
                     var newPagesCount = (int)Math.Ceiling((double)node.CharsCount / CHARS_PER_PAGE);
@@ -165,7 +148,7 @@ namespace BookReader.Core.Business
             }
         }
 
-        private void CreateHtmlElement(IElement parrent, DocumentNode element, IDocument doc)
+        private void CreateHtmlElement(IElement parrent, ITextElement element, IDocument doc)
         {
             var htmlNode = CreateHtmlNodeByTypeSelector[element.NodeType](doc);
             if (!element.Attributes.IsNullOrEmpty())
@@ -208,17 +191,18 @@ namespace BookReader.Core.Business
             }
             else
             {
-                if (element.NodeType == TextNodeType.Word)
+                if (element.NodeType == TextNodeType.Word && element is TextNode text)
                 {
-                    htmlNode.TextContent = $"{element.Value ?? string.Empty}";
+                    htmlNode.TextContent = $"{text.Value ?? string.Empty}";
                     parrent.Append(doc.CreateTextNode(" "));
                 }
 
                 parrent.Append(htmlNode);
             }
-            if (!element.Children.IsNullOrEmpty())
+
+            if (element is CompositeNode compositeEl && !compositeEl.Children.IsNullOrEmpty())
             {
-                foreach (var child in element.Children)
+                foreach (var child in compositeEl.Children)
                 {
                     CreateHtmlElement(htmlNode, child, doc);
                 }

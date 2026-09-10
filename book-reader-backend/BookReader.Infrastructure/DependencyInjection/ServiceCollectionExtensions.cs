@@ -28,6 +28,7 @@ public static class ServiceCollectionExtensions
         IConfiguration configuration)
     {
         services.AddScoped<IBookRepository, BookRepository>();
+        services.AddScoped<ILearningRepository, LearningRepository>();
         services.AddScoped<ITranslationRespository, TranslationRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IRoleRepository, RoleRepository>();
@@ -40,6 +41,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ITranslationService, TranslationService>();
         services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<ILearningService, LearningService>();
         
 
         return services;

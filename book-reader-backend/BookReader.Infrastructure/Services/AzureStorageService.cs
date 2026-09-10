@@ -1,11 +1,13 @@
 ﻿using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
+using BookReader.Core.Abstract.Business;
 using BookReader.Core.Abstract.Services;
 using BookReader.Core.DTOs.Models;
 using BookReader.Core.Enums;
 using BookReader.Infrastructure.Persistence.Configurations;
 using Microsoft.Extensions.Options;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace BookReader.Infrastructure.Services
 {
@@ -78,7 +80,7 @@ namespace BookReader.Infrastructure.Services
 
         public async Task<UploadFileResult> SaveParsedBookToStorageAsync(int userId,
             int bookId,
-            DocumentNode data,
+            CompositeNode data,
             CancellationToken token = default)
         {
             var path = Path.Combine(userId.ToString(), bookId.ToString());
@@ -90,7 +92,9 @@ namespace BookReader.Infrastructure.Services
                 await JsonSerializer.SerializeAsync(
                     stream,
                     data,
-                    new JsonSerializerOptions { WriteIndented = true },
+                    new JsonSerializerOptions {
+                        WriteIndented = true
+                    },
                     token);
                 stream.Position = 0;
                 var blobClient = _parsedBooksContainer.GetBlobClient(filePath);

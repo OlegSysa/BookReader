@@ -25,6 +25,8 @@ export const ENDPOINTS = {
     deleteBook: (id: number) =>
         `${API_BASE}/book?bookId=${id}`,
     learnWord: () =>
-        `${API_BASE} /words/learning`,
+        `${API_BASE}/Learning`,
+    getUserVocabulary: () =>
+        `${API_BASE}/Learning`,
 
 };

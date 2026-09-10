@@ -34,6 +34,9 @@ namespace BookReader.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int>("Bokkmark")
+                        .HasColumnType("integer");
+
                     b.Property<int>("ChaptersCount")
                         .HasColumnType("integer");
 
@@ -75,6 +78,29 @@ namespace BookReader.Infrastructure.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("books", (string)null);
+                });
+
+            modelBuilder.Entity("BookReader.Core.Entities.LearningWord", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("TranslationId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TranslationId");
+
+                    b.HasIndex("UserId", "TranslationId");
+
+                    b.ToTable("LearningWords");
                 });
 
             modelBuilder.Entity("BookReader.Core.Entities.OutboxMessage", b =>
@@ -221,6 +247,25 @@ namespace BookReader.Infrastructure.Migrations
                         {
                             t.HasCheckConstraint("CK_User_PasswordOrExternalId", "\"PasswordHash\" IS NOT NULL OR \"ExternalId\" IS NOT NULL");
                         });
+                });
+
+            modelBuilder.Entity("BookReader.Core.Entities.LearningWord", b =>
+                {
+                    b.HasOne("BookReader.Core.Entities.Translation", "Translation")
+                        .WithMany()
+                        .HasForeignKey("TranslationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BookReader.Core.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Translation");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("BookReader.Core.Entities.User", b =>

@@ -1,4 +1,5 @@
-﻿using BookReader.Core.Abstract.Services;
+﻿using BookReader.Core.Abstract.Business;
+using BookReader.Core.Abstract.Services;
 using BookReader.Core.DTOs.Models;
 using BookReader.Core.Enums;
 using System;
@@ -17,7 +18,7 @@ namespace BookReader.Core.Business.Parsers
         {
             _storageService = storageService;
         }
-        public async Task<DocumentNode> ParseFile(string path)
+        public async Task<CompositeNode> ParseFile(string path)
         {
             using var stream = await _storageService.GetBookAsync(path);
             var document = await XDocument.LoadAsync(
@@ -33,12 +34,12 @@ namespace BookReader.Core.Business.Parsers
                     "FB2 document does not contain body element.");
             }
             var sections = body.Elements(ns + "section").ToList();
-            var chapters = new List<DocumentNode>();
+            var chapters = new List<CompositeNode>();
             for (int i = 0; i < sections.Count; i++)
             {
                 var section = sections[i];
 
-                var chapter = new DocumentNode
+                var chapter = new CompositeNode
                 {
                     NodeType = TextNodeType.Chapter
                 };
@@ -57,7 +58,7 @@ namespace BookReader.Core.Business.Parsers
                 {
                     var paragraphElement = paragraphs[j];
 
-                    var paragraph = new DocumentNode
+                    var paragraph = new CompositeNode
                     {
                         NodeType = TextNodeType.Paragraph
                     };
@@ -79,16 +80,16 @@ namespace BookReader.Core.Business.Parsers
                         .Where(s => !string.IsNullOrWhiteSpace(s))
                         .ToList();
 
-                    paragraph.CharsCount = sentences.Sum(s => s.Length);
+                    //paragraph.CharsCount = sentences.Sum(s => s.Length);
 
                     for (int k = 0; k < sentences.Count; k++)
                     {
                         var sentenceText = sentences[k];
 
-                        var sentence = new DocumentNode
+                        var sentence = new CompositeNode
                         {
                             NodeType = TextNodeType.Sentence,
-                            CharsCount = sentenceText.Length
+                           // CharsCount = sentenceText.Length
                         };
 
                         sentence.Attributes.Add(
@@ -105,7 +106,7 @@ namespace BookReader.Core.Business.Parsers
                         {
                             var word = words[l];
 
-                            var wordNode = new DocumentNode
+                            var wordNode = new TextNode
                             {
                                 Value = word,
                                 NodeType = TextNodeType.Word
@@ -120,15 +121,15 @@ namespace BookReader.Core.Business.Parsers
                     }
                 }
 
-                chapter.CharsCount =
-                    chapter.Children.Sum(x => x.CharsCount);
+                //chapter.CharsCount =
+                //    chapter.Children.Sum(x => x.CharsCount);
             }
-            var bookNode = new DocumentNode()
+            var bookNode = new CompositeNode()
             {
                 NodeType = TextNodeType.Document,
-                CharsCount = chapters.Sum(c => c.CharsCount),
-                Children = chapters
+                //CharsCount = chapters.Sum(c => c.CharsCount),
             };
+            bookNode.Children.AddRange(chapters);
             return bookNode;
 
         }

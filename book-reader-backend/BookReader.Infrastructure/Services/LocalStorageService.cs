@@ -1,4 +1,5 @@
-﻿using BookReader.Core.Abstract.Services;
+﻿using BookReader.Core.Abstract.Business;
+using BookReader.Core.Abstract.Services;
 using BookReader.Core.Business;
 using BookReader.Core.DTOs.Models;
 using BookReader.Core.Entities;
@@ -52,7 +53,7 @@ namespace BookReader.Infrastructure.Services
 
         public async Task<UploadFileResult> SaveParsedBookToStorageAsync(int userId,
             int bookId,
-            DocumentNode data,
+            CompositeNode data,
             CancellationToken token)
         {
             var bookPath = Path.Combine(string.Empty, userId.ToString(), bookId.ToString());
@@ -60,16 +61,7 @@ namespace BookReader.Infrastructure.Services
             {
                 Directory.CreateDirectory(bookPath);
             }
-            //foreach (var (chapter, index) in data.Select((chapter, index) => (chapter, index)))
-            //{
-            //    var fileName = Path.Combine(bookPath, $"{index + 1}.json");
- 
-            //    await using var stream = File.Create(fileName);
-            //    await JsonSerializer.SerializeAsync(stream, chapter, new JsonSerializerOptions
-            //    {
-            //        WriteIndented = true
-            //    });
-            //}
+            
             return new UploadFileResult(BookStatus.Ready, bookPath);
         }
 

@@ -19,5 +19,6 @@ namespace BookReader.Core.Entities
         public required BookStatus Status { get; set; }
         public DateTime CreatedAtUtc { get; set; }
         public bool Deleted { get; set; }
+        public int Bokkmark { get; set; }
     }
 }

@@ -1,4 +1,5 @@
-﻿using BookReader.Core.DTOs.Models;
+﻿using BookReader.Core.Abstract.Business;
+using BookReader.Core.DTOs.Models;
 
 namespace BookReader.Core.Abstract.Services
 {
@@ -8,7 +9,7 @@ namespace BookReader.Core.Abstract.Services
             string fileName, int userId, CancellationToken token = default);
         Task<UploadFileResult> SaveParsedBookToStorageAsync(int userId,
             int bookId,
-            DocumentNode data,
+            CompositeNode data,
             CancellationToken token = default);
 
         Task<bool> DeleteBookFromStorage(int userId, string fileName);

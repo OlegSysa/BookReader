@@ -94,6 +94,7 @@ export default function PageContent({ bookId }: PageContent) {
 
         if (button) {
             const loadSentenceTranslation = async () => {
+
                 const sentenceContainer =
                     target.closest<HTMLElement>(".sentence");
 

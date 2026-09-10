@@ -1,4 +1,5 @@
-﻿using BookReader.Core.Abstract.Services;
+﻿using BookReader.Core.Abstract.Business;
+using BookReader.Core.Abstract.Services;
 using BookReader.Core.DTOs.Models;
 using BookReader.Core.Enums;
 using System;
@@ -19,16 +20,16 @@ namespace BookReader.Core.Business.Parsers
             _storageService = storageService;
         }
 
-        public async Task<DocumentNode> ParseFile(string path)
+        public async Task<CompositeNode> ParseFile(string path)
         {
-            var chapters = new List<DocumentNode>();
+            var chapters = new List<CompositeNode>();
 
             using var stream = await _storageService.GetBookAsync(path);
             using var document = PdfDocument.Open(stream);
             foreach (var (page, index) in document.GetPages()
                          .Select((page, index) => (page, index)))
             {
-                var chapter = new DocumentNode
+                var chapter = new CompositeNode
                 {
                     NodeType = TextNodeType.Chapter
                 };
@@ -50,7 +51,7 @@ namespace BookReader.Core.Business.Parsers
                 {
                     var paragraphText = paragraphs[i];
 
-                    var paragraph = new DocumentNode
+                    var paragraph = new CompositeNode
                     {
                         NodeType = TextNodeType.Paragraph
                     };
@@ -68,17 +69,17 @@ namespace BookReader.Core.Business.Parsers
                         .Where(x => !string.IsNullOrWhiteSpace(x))
                         .ToList();
 
-                    paragraph.CharsCount =
-                        sentences.Sum(x => x.Length);
+                    //paragraph.CharsCount =
+                    //    sentences.Sum(x => x.Length);
 
                     for (int j = 0; j < sentences.Count; j++)
                     {
                         var sentenceText = sentences[j];
 
-                        var sentence = new DocumentNode
+                        var sentence = new CompositeNode
                         {
                             NodeType = TextNodeType.Sentence,
-                            CharsCount = sentenceText.Length
+                            //CharsCount = sentenceText.Length
                         };
 
                         sentence.Attributes.Add(
@@ -94,7 +95,7 @@ namespace BookReader.Core.Business.Parsers
 
                         for (int k = 0; k < words.Length; k++)
                         {
-                            var word = new DocumentNode
+                            var word = new TextNode
                             {
                                 Value = words[k],
                                 NodeType = TextNodeType.Word
@@ -109,16 +110,16 @@ namespace BookReader.Core.Business.Parsers
                     }
                 }
 
-                chapter.CharsCount =
-                    chapter.Children.Sum(x => x.CharsCount);
+                //chapter.CharsCount =
+                //    chapter.Children.Sum(x => x.CharsCount);
             }
-            var bookNode = new DocumentNode()
+            var bookNode = new CompositeNode()
             {
                 NodeType = TextNodeType.Document,
-                CharsCount = chapters.Sum(c => c.CharsCount),
-                Children = chapters
+               // CharsCount = chapters.Sum(c => c.CharsCount),
             };
 
+            bookNode.Children.AddRange(chapters);
             return bookNode;
         }
 
