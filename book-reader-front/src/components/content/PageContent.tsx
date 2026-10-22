@@ -11,9 +11,11 @@ import "./styles.css";
 
 interface PageContent {
     bookId: number;
+    onLoadingChange: (loading: boolean) => void;
 }
 
-export default function PageContent({ bookId }: PageContent) {
+
+export default function PageContent({ bookId, onLoadingChange }: PageContent) {
     const [content, setContent] = useState("");
     const [page, setPage] = useState(1);
     const [hasNextPage, setHasNextPage] = useState(true);
@@ -32,7 +34,7 @@ export default function PageContent({ bookId }: PageContent) {
     ) => {
         try {
             setLoading(true);
-
+            onLoadingChange(true);
             const result = await getPageContent(
                 bookId,
                 pageNumber,
@@ -45,6 +47,7 @@ export default function PageContent({ bookId }: PageContent) {
         }
         finally {
             setLoading(false);
+            onLoadingChange(false);
         }
     };
 
@@ -151,11 +154,6 @@ export default function PageContent({ bookId }: PageContent) {
         }
     };
 
-
-    if (!content) {
-        return <div>Loading...</div>
-    }
-
     return (
         <div
             className="reader"
@@ -216,5 +214,5 @@ export default function PageContent({ bookId }: PageContent) {
                 </div>
             )}
         </div>
-    );
+    )
 }

@@ -22,9 +22,9 @@ namespace BookReader.API.Extensions
                 options.Domain = ".bookly.world";
             }
 
-            response.Cookies.Append("access_token", value,options );
+            response.Cookies.Append("access_token", value, options);
         }
 
-        
+
     }
 }

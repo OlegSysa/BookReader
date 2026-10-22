@@ -4,4 +4,5 @@ export interface Word {
     userId: number;
     sourceValue: string;
     translation: string;
+    example: string;
 }

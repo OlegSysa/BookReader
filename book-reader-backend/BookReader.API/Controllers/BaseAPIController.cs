@@ -7,12 +7,12 @@ namespace BookReader.API.Controllers
 {
     public abstract class BaseAPIController : ControllerBase
     {
-        protected IActionResult GenerateResponse<T>( int code, ServiceResult<T>? result = null)
+        protected IActionResult GenerateResponse<T>(int code, ServiceResult<T>? result = null)
         {
             if (result == null)
                 result = new ServiceResult<T>(default, null);
             var isSuccess = string.IsNullOrEmpty(result.Error);
-            var respose =  new ApiResponse<T>()
+            var respose = new ApiResponse<T>()
             {
                 Data = result.Data,
                 Code = code,
@@ -23,11 +23,15 @@ namespace BookReader.API.Controllers
             return StatusCode(code, respose);
         }
 
-        protected int UserId { get { 
+        protected int UserId
+        {
+            get
+            {
                 var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 if (!int.TryParse(userIdClaim, out var userId))
                     return 0;
                 else return userId;
-            } }
+            }
+        }
     }
 }

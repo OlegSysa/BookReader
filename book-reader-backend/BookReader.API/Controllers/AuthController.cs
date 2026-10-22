@@ -37,7 +37,7 @@ namespace BookReader.API.Controllers
                 tokenResult.Data = "success";
             }
 
-            var statusCode = tokenResult.IsSuccess ? 
+            var statusCode = tokenResult.IsSuccess ?
                 StatusCodes.Status201Created :
                 StatusCodes.Status409Conflict;
             return GenerateResponse(statusCode, tokenResult);
@@ -52,7 +52,7 @@ namespace BookReader.API.Controllers
                 Response.SetTokenCookie(_environment, tokenResult.Data!);
                 tokenResult.Data = "success";
             }
-            var statusCode = tokenResult.IsSuccess ? 
+            var statusCode = tokenResult.IsSuccess ?
                 StatusCodes.Status200OK :
                 StatusCodes.Status401Unauthorized;
             return GenerateResponse(statusCode, tokenResult);

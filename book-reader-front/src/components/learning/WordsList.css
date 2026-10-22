@@ -1,0 +1,158 @@
+.words-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 2fr 120px;
+    width: 100%;
+    border: 1px solid #cfe3ef;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.grid-header {
+    padding: 14px 16px;
+    font-weight: 600;
+    color: #24485c;
+    background: #e6f2fa;
+    border-bottom: 1px solid #c9e1ef;
+}
+
+.word-row {
+    display: contents;
+}
+
+.word-row>div {
+    padding: 14px 16px;
+    border-top: 1px solid #dcecf5;
+}
+
+/* Alternating rows */
+.word-row.odd>div {
+    background: #ffffff;
+}
+
+.word-row.even>div {
+    background: #f0f7fc;
+}
+
+/* Hover */
+.word-row:hover>div {
+    background: #e2f1fb;
+}
+
+
+/* Actions */
+
+.actions {
+    display: flex;
+    gap: 8px;
+}
+
+.actions button {
+    padding: 6px 10px;
+    border: 1px solid #cfe3ef;
+    border-radius: 6px;
+    background: white;
+    color: #31576b;
+    cursor: pointer;
+}
+
+.actions button:hover {
+    background: #e6f2fa;
+}
+
+
+/* Toolbar */
+
+.words-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.words-toolbar button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 38px;
+    height: 38px;
+
+    border: 1px solid #cfe3ef;
+    border-radius: 6px;
+    background: white;
+
+    color: #31576b;
+    cursor: pointer;
+
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.words-toolbar button:hover {
+    background: #e6f2fa;
+    border-color: #a9cddd;
+}
+
+
+/* Pagination */
+
+.pagination {
+    display: flex;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.page-size {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #31576b;
+    font-size: 14px;
+}
+
+.page-size select {
+    height: 36px;
+    padding: 0 30px 0 10px;
+
+    border: 1px solid #cfe3ef;
+    border-radius: 6px;
+
+    background: white;
+    color: #31576b;
+
+    cursor: pointer;
+}
+
+.page-size select:focus {
+    outline: none;
+    border-color: #8fc4dc;
+}
+
+.page-buttons {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0 auto;
+}
+
+.page-buttons button {
+    width: 36px;
+    height: 36px;
+
+    border: 1px solid #cfe3ef;
+    border-radius: 6px;
+
+    background: white;
+    color: #31576b;
+
+    cursor: pointer;
+}
+
+.page-buttons button:hover {
+    background: #e6f2fa;
+}
+
+.page-buttons button.active {
+    background: #5ba6cc;
+    color: white;
+    border-color: #5ba6cc;
+}

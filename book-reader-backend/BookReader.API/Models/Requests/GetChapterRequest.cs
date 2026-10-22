@@ -3,6 +3,6 @@
     public class GetChapterRequest
     {
         public int BookId { get; set; }
-        public int Selector {  get; set; }
+        public int Selector { get; set; }
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace BookReader.API.Models.Responses
 {
-    public class ApiResponse<T> 
+    public class ApiResponse<T>
     {
         public T? Data { get; set; }
         public int Code { get; set; }
