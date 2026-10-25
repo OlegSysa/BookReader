@@ -16,17 +16,17 @@ namespace BookReader.Core.Business
     public class LearningService : BaseService<LearningService>, ILearningService
     {
         private readonly ILearningRepository _learningRepository;
-        private readonly ITranslationRespository _translationRespository;
+        private readonly ITranslationRepository _translationRepository;
         private readonly ICacheService _cacheService;
         public LearningService(ICacheService cacheService,
-            ITranslationRespository translationRespository,
+            ITranslationRepository translationRepository,
             ILearningRepository learningRepository,
             IConfiguration config,
             ILogger<LearningService> logger,
             IHttpContextAccessor httpContextAccessor) : base(config, logger, httpContextAccessor)
-        {   
+        {
             _cacheService = cacheService;
-            _translationRespository = translationRespository;
+            _translationRepository = translationRepository;
             _learningRepository = learningRepository;
         }
 

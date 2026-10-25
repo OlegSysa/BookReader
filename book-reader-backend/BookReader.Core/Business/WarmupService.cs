@@ -26,11 +26,11 @@ namespace BookReader.Core.Business
         {
             using var scope = _scopeFactory.CreateScope();
             var cacheService = scope.ServiceProvider.GetRequiredService<ICacheService>();
-            var translationRepository = scope.ServiceProvider.GetRequiredService<ITranslationRespository>();
+            var translationRepository = scope.ServiceProvider.GetRequiredService<ITranslationRepository>();
             var allTranslations = await translationRepository.GetAllAsNoTrackingAsync(cancellationToken);
             var translationDict = allTranslations
-                .ToDictionary(t => 
-                t.SourceWord.BuildChacheTranslationKey(t.SourceLang, t.TargetLang),
+                .ToDictionary(t =>
+                t.SourceWord.BuildCacheTranslationKey(t.SourceLang, t.TargetLang),
                 t => t.TranslatedWord);
 
            

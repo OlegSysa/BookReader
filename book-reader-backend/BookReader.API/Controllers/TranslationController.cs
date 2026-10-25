@@ -1,6 +1,4 @@
-﻿using AngleSharp.Io;
-using BookReader.API.Models.Responses;
-using BookReader.Core.Abstract.Services;
+﻿using BookReader.Core.Abstract.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

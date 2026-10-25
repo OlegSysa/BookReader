@@ -6,9 +6,9 @@ namespace BookReader.Core.Extensions
 {
     public static class CacheExtensions
     {
-        public static string BuildChacheTranslationKey(this string input, string sourceLang, string targetLang) =>
+        public static string BuildCacheTranslationKey(this string input, string sourceLang, string targetLang) =>
             $"translation:{sourceLang}:{targetLang}:{input.ToLower()}";
-        public static string BuildChacheBookKey(int userId, int bookId) =>
+        public static string BuildCacheBookKey(int userId, int bookId) =>
             $"parsedbooks:{userId}:{bookId}";
 
     }

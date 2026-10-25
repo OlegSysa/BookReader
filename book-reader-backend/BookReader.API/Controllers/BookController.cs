@@ -1,10 +1,6 @@
-﻿using AngleSharp.Io;
-using BookReader.API.Models.Requests;
-using BookReader.API.Models.Responses;
+﻿using BookReader.API.Models.Requests;
 using BookReader.Core.Abstract.Services;
 using BookReader.Core.DTOs.Models;
-using BookReader.Core.Entities;
-using BookReader.Core.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;

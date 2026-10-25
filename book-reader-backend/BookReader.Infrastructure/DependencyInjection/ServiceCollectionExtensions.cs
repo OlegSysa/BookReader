@@ -29,7 +29,7 @@ public static class ServiceCollectionExtensions
     {
         services.AddScoped<IBookRepository, BookRepository>();
         services.AddScoped<ILearningRepository, LearningRepository>();
-        services.AddScoped<ITranslationRespository, TranslationRepository>();
+        services.AddScoped<ITranslationRepository, TranslationRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IRoleRepository, RoleRepository>();
         services.AddScoped<IOutboxMessageRepository, OutboxMessageRepository>();

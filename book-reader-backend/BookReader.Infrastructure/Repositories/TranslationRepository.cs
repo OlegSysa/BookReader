@@ -8,7 +8,7 @@ using System.Text;
 
 namespace BookReader.Infrastructure.Repositories
 {
-    public class TranslationRepository : BaseRepository, ITranslationRespository
+    public class TranslationRepository : BaseRepository, ITranslationRepository
     {
         public TranslationRepository(AppDbContext context) : base(context)
         {

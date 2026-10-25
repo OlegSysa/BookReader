@@ -12,7 +12,7 @@ namespace BookReader.API.Controllers
             if (result == null)
                 result = new ServiceResult<T>(default, null);
             var isSuccess = string.IsNullOrEmpty(result.Error);
-            var respose = new ApiResponse<T>()
+            var response = new ApiResponse<T>()
             {
                 Data = result.Data,
                 Code = code,
@@ -20,7 +20,7 @@ namespace BookReader.API.Controllers
                 ErrorMessage = result.Error
             };
 
-            return StatusCode(code, respose);
+            return StatusCode(code, response);
         }
 
         protected int UserId

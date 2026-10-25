@@ -1,9 +1,5 @@
 ﻿using BookReader.Core.Abstract.Services;
-using BookReader.Core.DTOs.Models;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System.Net;
-using static DeepL.Model.DocumentStatus;
 
 namespace BookReader.API.Controllers
 {

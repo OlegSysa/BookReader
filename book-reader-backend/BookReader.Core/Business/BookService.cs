@@ -10,8 +10,6 @@ using BookReader.Core.Extensions.Mappings;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using System.Net.NetworkInformation;
-using System.Net.WebSockets;
 using System.Text.Json;
 
 namespace BookReader.Core.Services

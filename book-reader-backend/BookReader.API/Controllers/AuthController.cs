@@ -1,6 +1,5 @@
 ﻿using BookReader.API.Extensions;
 using BookReader.API.Models.Requests;
-using BookReader.API.Models.Responses;
 using BookReader.Core.Abstract.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;

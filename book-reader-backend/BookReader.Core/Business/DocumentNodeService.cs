@@ -37,7 +37,7 @@ namespace BookReader.Core.Business
             int pageNumber, bool useBookmark,
             CancellationToken token)
         {
-            var cacheKey = CacheExtensions.BuildChacheBookKey(userId, bookId);
+            var cacheKey = CacheExtensions.BuildCacheBookKey(userId, bookId);
             var bookState = await _cacheService.GetAsync<BookState>(cacheKey);
             if (bookState == null)
             {

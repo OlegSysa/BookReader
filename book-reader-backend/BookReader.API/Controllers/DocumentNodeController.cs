@@ -1,8 +1,4 @@
-﻿using BookReader.API.Models.Responses;
-using BookReader.Core.Abstract.Services;
-using BookReader.Core.DTOs.Models;
-using BookReader.Core.Entities;
-using BookReader.Core.Services;
+﻿using BookReader.Core.Abstract.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

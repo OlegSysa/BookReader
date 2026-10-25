@@ -1,12 +1,8 @@
-﻿using BookReader.API.Models.Responses;
-using BookReader.Core.DTOs.Models;
-using Microsoft.EntityFrameworkCore.ValueGeneration;
-
-namespace BookReader.API.Extensions
+﻿namespace BookReader.API.Extensions
 {
     public static class HttpExtensions
     {
-        public static void SetTokenCookie(this HttpResponse response, IWebHostEnvironment environment, string value, int? expireTime = null)
+        public static void SetTokenCookie(this HttpResponse response, IWebHostEnvironment environment, string value)
         {
             if (string.IsNullOrEmpty(value))
                 return;
@@ -24,7 +20,5 @@ namespace BookReader.API.Extensions
 
             response.Cookies.Append("access_token", value, options);
         }
-
-
     }
 }
