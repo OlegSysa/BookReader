@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="BookReader.Mobile.Pages.AuthPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Shell.NavBarIsVisible="False"
+    BackgroundColor="{StaticResource Paper}"
+    Title="Вхід">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="28,48,28,32" Spacing="0" VerticalOptions="Center">
+            <Border
+                BackgroundColor="{StaticResource Accent}"
+                HeightRequest="64"
+                HorizontalOptions="Start"
+                StrokeShape="RoundRectangle 16"
+                StrokeThickness="0"
+                WidthRequest="64">
+                <Label
+                    FontSize="22"
+                    HorizontalOptions="Center"
+                    Text="BR"
+                    TextColor="White"
+                    VerticalOptions="Center" />
+            </Border>
+
+            <Label
+                Margin="0,28,0,0"
+                FontAttributes="Bold"
+                FontSize="34"
+                Text="BookReader"
+                TextColor="{StaticResource Ink}" />
+            <Label
+                Margin="0,8,0,32"
+                FontSize="16"
+                Text="Увійдіть, щоб відкрити свою бібліотеку."
+                TextColor="{StaticResource Muted}" />
+
+            <Label FontSize="13" Text="Електронна пошта" TextColor="{StaticResource Ink}" />
+            <Border
+                Margin="0,8,0,16"
+                BackgroundColor="{StaticResource Card}"
+                Padding="14,4"
+                Stroke="{StaticResource Line}"
+                StrokeShape="RoundRectangle 12"
+                StrokeThickness="1">
+                <Entry Placeholder="you@email.com" PlaceholderColor="{StaticResource Muted}" />
+            </Border>
+
+            <Label FontSize="13" Text="Пароль" TextColor="{StaticResource Ink}" />
+            <Border
+                Margin="0,8,0,24"
+                BackgroundColor="{StaticResource Card}"
+                Padding="14,4"
+                Stroke="{StaticResource Line}"
+                StrokeShape="RoundRectangle 12"
+                StrokeThickness="1">
+                <Entry
+                    IsPassword="True"
+                    Placeholder="Щонайменше 8 символів"
+                    PlaceholderColor="{StaticResource Muted}" />
+            </Border>
+
+            <Button
+                Clicked="OnOpenLibraryClicked"
+                CornerRadius="14"
+                FontSize="16"
+                HeightRequest="52"
+                Text="Увійти" />
+
+            <Button
+                Margin="0,8,0,0"
+                BackgroundColor="Transparent"
+                Clicked="OnOpenLibraryClicked"
+                FontSize="15"
+                Text="Створити акаунт"
+                TextColor="{StaticResource Accent}" />
+
+            <Label
+                Margin="0,8,0,8"
+                FontSize="13"
+                HorizontalTextAlignment="Center"
+                Text="або"
+                TextColor="{StaticResource Muted}" />
+
+            <Button
+                BackgroundColor="{StaticResource Card}"
+                BorderColor="{StaticResource Line}"
+                BorderWidth="1"
+                Clicked="OnOpenLibraryClicked"
+                CornerRadius="14"
+                FontSize="16"
+                HeightRequest="52"
+                Text="Продовжити з Google"
+                TextColor="{StaticResource Ink}" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
